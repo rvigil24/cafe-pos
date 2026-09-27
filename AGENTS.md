@@ -6,15 +6,18 @@ Build the Flutter Android MVP described in `docs/PRD.md`: an offline-first POS f
 
 ## Source of truth
 
-- Product requirements: `docs/PRD.md`
-- Technical decisions: `docs/DECISIONS.md`
-- Architecture: `docs/ARCHITECTURE.md`
-- UI behavior: `docs/UI_SPEC.md`
-- Database schema: `database/001_initial_schema.sql`
-- Acceptance criteria: `docs/ACCEPTANCE_CRITERIA.md`
-- Implementation order: `docs/IMPLEMENTATION_PLAN.md`
+Use the following precedence when documents differ:
 
-If documents conflict, stop and report the conflict. Do not silently invent a requirement.
+1. Working and scope constraints: `AGENTS.md`
+2. Product requirements and business rules: `docs/PRD.md`
+3. Technical decisions: `docs/DECISIONS.md`
+4. Architecture: `docs/ARCHITECTURE.md`
+5. UI behavior: `docs/UI_SPEC.md`
+6. Database implementation: `database/001_initial_schema.sql`
+7. Verification: `docs/ACCEPTANCE_CRITERIA.md`
+8. Implementation order: `docs/IMPLEMENTATION_PLAN.md`
+
+Lower-precedence documents must implement, not redefine, higher-precedence documents. If documents still conflict, stop and report the conflict before changing either one. Do not silently invent a requirement.
 
 ## Stack
 
@@ -52,9 +55,13 @@ Widgets must not execute SQL. Domain and application code must not import Flutte
 - Use repositories for persistence access.
 - Use transactions whenever one operation changes multiple tables.
 - Store money as integer cents, never floating-point values.
-- Store timestamps in UTC and display/report them in `America/El_Salvador`.
+- Store timestamps as ISO-8601 UTC text with a `Z` suffix and display/report them in `America/El_Salvador`.
+- Generate internal entity IDs in the application as UUIDs; keep `order_number` as a separate sequential business identifier allocated transactionally.
 - Preserve product, category, table, and price snapshots in order history.
 - Never physically delete paid sales.
+- Reject every update to items or totals of `PAID` and `CANCELLED` orders in the application and repository implementations.
+- Represent expected business failures with typed domain errors; do not expose SQLite exceptions to widgets.
+- Keep test fakes under `test/`; production code must not contain test-only repository implementations.
 - Do not expand the MVP without explicit approval.
 
 ## Expected commands
@@ -74,11 +81,11 @@ Use `flutter test integration_test` when integration tests exist.
 
 ## Definition of done
 
-A task is complete only when:
+A task is complete only when the checks applicable to its scope pass:
 
 1. Its acceptance criteria pass.
 2. Relevant tests were added or updated.
-3. Formatting, analysis, tests, and build pass.
+3. Formatting, analysis, tests, and build pass once the Flutter project exists; documentation-only changes must at least pass relevant static checks.
 4. Database migrations were tested against existing data when applicable.
 5. Affected documentation is updated.
 6. The final diff contains no unrelated framework or scope changes.

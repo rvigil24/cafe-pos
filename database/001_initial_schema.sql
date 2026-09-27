@@ -57,12 +57,23 @@ CREATE TABLE IF NOT EXISTS orders (
   FOREIGN KEY (table_id) REFERENCES cafe_tables(id) ON UPDATE CASCADE ON DELETE RESTRICT,
   CHECK (
     (type = 'DINE_IN' AND table_id IS NOT NULL AND table_name_snapshot IS NOT NULL)
-    OR (type = 'TAKEAWAY' AND table_id IS NULL)
+    OR (type = 'TAKEAWAY' AND table_id IS NULL AND table_name_snapshot IS NULL)
   ),
   CHECK (
-    (status = 'PAID' AND paid_at IS NOT NULL AND cancelled_at IS NULL)
-    OR (status = 'CANCELLED' AND cancelled_at IS NOT NULL AND paid_at IS NULL)
-    OR (status = 'OPEN' AND paid_at IS NULL AND cancelled_at IS NULL)
+    (status = 'PAID' AND paid_at IS NOT NULL AND cancelled_at IS NULL AND cancellation_reason IS NULL)
+    OR (
+      status = 'CANCELLED'
+      AND cancelled_at IS NOT NULL
+      AND paid_at IS NULL
+      AND cancellation_reason IS NOT NULL
+      AND length(trim(cancellation_reason)) > 0
+    )
+    OR (
+      status = 'OPEN'
+      AND paid_at IS NULL
+      AND cancelled_at IS NULL
+      AND cancellation_reason IS NULL
+    )
   )
 );
 
@@ -91,6 +102,9 @@ CREATE TABLE IF NOT EXISTS order_items (
 
 CREATE INDEX IF NOT EXISTS order_items_order_idx ON order_items(order_id);
 CREATE INDEX IF NOT EXISTS order_items_product_idx ON order_items(product_id);
+CREATE UNIQUE INDEX IF NOT EXISTS one_line_per_product_per_order_uq
+ON order_items(order_id, product_id)
+WHERE product_id IS NOT NULL;
 
 CREATE TABLE IF NOT EXISTS payments (
   id TEXT PRIMARY KEY NOT NULL,
@@ -118,7 +132,8 @@ CREATE TABLE IF NOT EXISTS settings (
 
 INSERT OR IGNORE INTO settings(key, value, updated_at)
 VALUES
-  ('schema_version', '1', CURRENT_TIMESTAMP),
-  ('timezone', 'America/El_Salvador', CURRENT_TIMESTAMP),
-  ('business_name', 'Cafetería', CURRENT_TIMESTAMP),
-  ('last_order_number', '0', CURRENT_TIMESTAMP);
+  ('timezone', 'America/El_Salvador', strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+  ('business_name', 'Cafetería', strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+  ('last_order_number', '0', strftime('%Y-%m-%dT%H:%M:%fZ', 'now'));
+
+PRAGMA user_version = 1;

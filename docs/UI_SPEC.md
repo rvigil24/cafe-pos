@@ -42,13 +42,15 @@ Use two main areas:
 Actions:
 
 - Add a product with one tap.
+- Adding a product already present increases its existing line at the captured price; each product has at most one line and one line-level note.
 - Increase or decrease quantity.
 - Remove a line.
 - Edit a note.
 - Save and return.
 - Proceed to payment.
 
-Sold-out products may appear disabled. Inactive products must not appear.
+Sold-out products may appear disabled. Inactive products and products in an inactive category must not appear.
+If a product already in the order becomes sold out or inactive, keep the line visible and allow only decreasing or removing it.
 
 ### Payment
 
@@ -61,7 +63,7 @@ Sold-out products may appear disabled. Inactive products must not appear.
 
 ### Sales
 
-- Descending list by date.
+- Descending list by payment date.
 - Search by order number.
 - Date and payment filters.
 - Read-only detail view.
@@ -77,12 +79,15 @@ Sold-out products may appear disabled. Inactive products must not appear.
 ### Products
 
 - Category and product management sections.
-- Create, edit, deactivate, and reorder.
+- Create, edit, and deactivate categories and products.
+- Reorder categories; list products alphabetically within each category.
+- Explain that deactivating a category hides its products from order entry without deactivating them individually.
 - Quick availability toggle.
 
 ### Settings
 
 - Tables.
+- Prevent deactivation of an occupied table and explain why the action is unavailable.
 - Business name.
 - Export backup.
 - Restore backup with an explicit confirmation.

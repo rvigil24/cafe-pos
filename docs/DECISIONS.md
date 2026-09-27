@@ -25,3 +25,11 @@ Payment insertion and order status changes must commit or roll back together. Fi
 ## Decision 6 — No ORM in the MVP
 
 The schema is small, SQL queries are understandable, and explicit migrations make backup and restoration behavior easier to reason about. An ORM or code generator can be reconsidered if query volume or schema complexity grows.
+
+## Decision 7 — Abstract transaction runner
+
+Application use cases define transaction boundaries through a plain Dart `TransactionRunner`. Its SQLite implementation supplies transaction-scoped repositories backed by one connection and one transaction. This keeps SQLite out of application code while guaranteeing that related writes commit or roll back together.
+
+## Decision 8 — Canonical identifiers and time
+
+The application generates UUIDs for internal entity IDs. Order numbers remain sequential business identifiers and are allocated transactionally. Timestamps use canonical ISO-8601 UTC text with a `Z` suffix; calendar periods are interpreted in `America/El_Salvador` and converted to half-open UTC ranges for queries.

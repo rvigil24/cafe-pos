@@ -18,7 +18,7 @@ The exact package versions must be selected after compatibility checks. The expe
 
 - SQLite access and transactions: a maintained Flutter SQLite package, initially evaluate `sqflite`.
 - File paths: a maintained path utility package if required by the SQLite adapter.
-- UUIDs: a small UUID package if application-generated IDs are needed.
+- UUIDs: a small maintained UUID package for application-generated entity IDs.
 - Date/time formatting: the Dart/Flutter `intl` package if built-in formatting is insufficient.
 - Android file selection: a maintained file-picker or Storage Access Framework package.
 

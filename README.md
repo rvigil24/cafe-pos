@@ -37,10 +37,12 @@ The first release uses Flutter and Dart with local SQLite. It does not require a
 
 ## Start with a clean Flutter project
 
+From this repository root, run:
+
 ```bash
-flutter create cafe_pos --platforms=android
+flutter create --platforms=android .
 ```
 
-Copy this documentation package into the repository root, open the repository with Codex, switch to Plan mode, and use `prompts/START_HERE.md`.
+This preserves the documentation in place and creates the Flutter project in the same repository. Open the repository root with Codex, switch to Plan mode, and use `prompts/START_HERE.md`.
 
 Do not migrate a React/Vite/Capacitor scaffold. This package intentionally starts with a clean Flutter project.
