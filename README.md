@@ -1,6 +1,6 @@
 # Cafe POS — Flutter starter pack for Codex
 
-This package contains the product requirements, architecture, database schema, implementation plan, acceptance criteria, and Codex prompts for a small cafe POS application.
+This package contains the product requirements, architecture, database schema, development workflow, implementation plan, acceptance criteria, and Codex prompts for a small cafe POS application.
 
 ## Product summary
 
@@ -17,9 +17,9 @@ The first release uses Flutter and Dart with local SQLite. It does not require a
 5. `docs/UI_SPEC.md` — tablet screens and interaction requirements.
 6. `database/001_initial_schema.sql` — initial SQLite schema.
 7. `docs/ACCEPTANCE_CRITERIA.md` — verifiable completion criteria.
-8. `docs/IMPLEMENTATION_PLAN.md` — implementation milestones.
-9. `docs/TOOLS.md` — development environment and dependencies.
-10. `prompts/START_HERE.md` — first prompts for Codex.
+8. `docs/DEVELOPMENT_WORKFLOW.md` — authoritative planning, testing, review, commit, and completion process.
+9. `docs/IMPLEMENTATION_PLAN.md` — implementation milestones.
+10. `prompts/START_HERE.md` — optional convenience prompts for Codex.
 
 ## Decisions already made
 
@@ -43,6 +43,6 @@ From this repository root, run:
 flutter create --platforms=android .
 ```
 
-This preserves the documentation in place and creates the Flutter project in the same repository. Open the repository root with Codex, switch to Plan mode, and use `prompts/START_HERE.md`.
+This preserves the documentation in place and creates the Flutter project in the same repository. Open the repository root with Codex, switch to Plan mode, and optionally use a shortcut from `prompts/START_HERE.md`.
 
 Do not migrate a React/Vite/Capacitor scaffold. This package intentionally starts with a clean Flutter project.

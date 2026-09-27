@@ -1,16 +1,18 @@
 # Implementation Plan
 
-Each milestone must end with a working demonstration and its verification commands. Do not implement multiple milestones in one Codex task.
+Each milestone must follow `docs/DEVELOPMENT_WORKFLOW.md`, end with its stated working demonstration, and satisfy the workflow completion gate. Do not implement multiple milestones in one Codex task.
 
 ## Milestone 0 — Flutter bootstrap
 
 Objective: create a clean Flutter Android project without implementing the POS yet.
 
 - Verify Flutter, Dart, Android SDK, JDK, and emulator setup.
+- Record the verified toolchain versions in `README.md`; do not guess or preselect versions.
 - Create the project in this repository root with `flutter create --platforms=android .`.
 - Configure strict analysis, formatting, and test commands.
 - Confirm the Material 3 theme and tablet orientation strategy.
-- Select and verify the SQLite package and backup/file-storage packages.
+- Select and verify only the maintained packages needed for SQLite transactions, UUIDs, dates/timezone, file paths, and Android Storage Access Framework backups.
+- Do not add packages for global state management, networking, analytics, authentication, or cloud services.
 - Create the target `lib/` structure.
 - Add a minimal screen and a smoke test.
 
@@ -68,15 +70,11 @@ Output: a new payment appears correctly in history and reports.
 - Create a preventive backup and restore valid data.
 - Test airplane mode, restarts, updates, and migrations.
 - Review touch accessibility and error states.
+- Produce a sanitized example backup, a manual tablet test checklist, release notes, and an upgrade procedure.
 - Produce a candidate APK.
 
 Output: the MVP is installable and recoverable after device failure.
 
-## Recommended workflow for every milestone
+## Workflow
 
-1. Ask Codex for a plan limited to the milestone.
-2. Review affected files and acceptance criteria.
-3. Ask Codex to implement small tasks.
-4. Run the formatter, analyzer, tests, and build.
-5. Review the diff and perform a manual test.
-6. Commit before starting the next milestone.
+`docs/DEVELOPMENT_WORKFLOW.md` is the single authoritative process for planning, approval, implementation, testing, review, evidence, commits, and completion. Create each milestone record from `docs/milestones/TEMPLATE.md` when implementation begins.

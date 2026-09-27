@@ -15,7 +15,8 @@ Use the following precedence when documents differ:
 5. UI behavior: `docs/UI_SPEC.md`
 6. Database implementation: `database/001_initial_schema.sql`
 7. Verification: `docs/ACCEPTANCE_CRITERIA.md`
-8. Implementation order: `docs/IMPLEMENTATION_PLAN.md`
+8. Delivery workflow: `docs/DEVELOPMENT_WORKFLOW.md`
+9. Implementation order: `docs/IMPLEMENTATION_PLAN.md`
 
 Lower-precedence documents must implement, not redefine, higher-precedence documents. If documents still conflict, stop and report the conflict before changing either one. Do not silently invent a requirement.
 
@@ -49,6 +50,7 @@ Widgets must not execute SQL. Domain and application code must not import Flutte
 ## Working rules
 
 - Use Plan mode for milestones or changes that affect architecture.
+- Follow `docs/DEVELOPMENT_WORKFLOW.md` for planning, approval, evidence, testing, review, commits, and milestone closure.
 - Implement one verifiable milestone at a time.
 - Prefer vertical slices that finish with working behavior.
 - Keep business rules in use cases and domain code, not in widgets.
@@ -81,14 +83,7 @@ Use `flutter test integration_test` when integration tests exist.
 
 ## Definition of done
 
-A task is complete only when the checks applicable to its scope pass:
-
-1. Its acceptance criteria pass.
-2. Relevant tests were added or updated.
-3. Formatting, analysis, tests, and build pass once the Flutter project exists; documentation-only changes must at least pass relevant static checks.
-4. Database migrations were tested against existing data when applicable.
-5. Affected documentation is updated.
-6. The final diff contains no unrelated framework or scope changes.
+A task is complete only when the checks applicable to its scope pass. A milestone requires every completion gate and the explicit owner acceptance defined in `docs/DEVELOPMENT_WORKFLOW.md`. For non-milestone work, apply the same gate proportionally and never claim completion with a failing required check or an unrelated diff.
 
 ## MVP exclusions
 
