@@ -5,6 +5,7 @@
 - State: `COMPLETE`
 - Owner: Ruben Vigil
 - Branch: `milestone/0-flutter-bootstrap`
+- Remote branch: `origin/main`
 - Started: 2026-09-26
 - Completed: 2026-09-29
 - Approval: Plan approved on 2026-09-26; result tested and accepted by the owner on 2026-09-29
@@ -125,6 +126,7 @@ Create a clean Flutter Android project in this repository without implementing P
 
 - `8f67ced feat: bootstrap Flutter Android application`
 - `d09a4a9 docs: record milestone 0 evidence`
+- `3abeeff docs: close milestone 0`
 
 ## Remaining limitations or blockers
 

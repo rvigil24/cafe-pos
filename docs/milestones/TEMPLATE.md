@@ -5,6 +5,7 @@
 - State: `NOT_STARTED`
 - Owner:
 - Branch:
+- Remote branch:
 - Started:
 - Completed:
 - Approval:

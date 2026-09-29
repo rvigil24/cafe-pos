@@ -25,7 +25,7 @@ At implementation start, copy `docs/milestones/TEMPLATE.md` to `docs/milestones/
 - manual test evidence;
 - review findings;
 - remaining limitations;
-- final approval and commit references.
+- final approval, commit references, and remote branch.
 
 Keep the record concise and update it during the milestone, not retrospectively after details are lost. Do not place secrets, personal data, or real customer data in evidence.
 
@@ -198,6 +198,7 @@ A milestone is `COMPLETE` only when all applicable statements are true:
 - [ ] Documentation and the evidence record are current.
 - [ ] Self-review found no unresolved required issue or unrelated diff.
 - [ ] Commits are coherent and the worktree is clean.
+- [ ] Final commits are pushed to the configured remote and the local branch matches its upstream.
 - [ ] The owner explicitly accepts the milestone.
 
 Passing tests alone does not complete a milestone. Likewise, owner acceptance does not waive failed required checks unless the requirement itself is explicitly changed in the source documentation.
@@ -209,7 +210,19 @@ After approval:
 1. Record the completion date, final commit IDs, and owner acceptance in the evidence file.
 2. Ensure the final evidence update is committed.
 3. Merge the milestone branch through the configured review method, or retain the reviewed commits on `main` when direct work was explicitly authorized.
-4. Confirm `git status --short` is empty.
-5. Do not begin the next milestone until this closure is complete.
+4. Push the branch containing the final milestone commits to its configured remote. Set its upstream on the first push. If the reviewed commits were merged or retained on `main`, push `main` as well.
+5. Fetch the remote and confirm that the worktree is clean and the final local branch is neither ahead of nor behind its upstream.
+6. Record the remote branch in the evidence file and report the pushed commit to the owner.
+7. Do not begin the next milestone until this closure is complete.
+
+Typical commands are:
+
+```bash
+git push --set-upstream origin <branch>
+git fetch origin --prune
+git status --short --branch
+```
+
+If no remote is configured, authentication fails, or the push is rejected, keep the milestone `IN_PROGRESS` or `BLOCKED` and report the exact condition. Do not claim closure from local commits alone.
 
 If work is blocked, record the blocker and the last passing checks. Do not create a completion commit or advance the implementation plan as though the milestone passed.
