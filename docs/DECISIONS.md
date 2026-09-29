@@ -33,3 +33,11 @@ Application use cases define transaction boundaries through a plain Dart `Transa
 ## Decision 8 — Canonical identifiers and time
 
 The application generates UUIDs for internal entity IDs. Order numbers remain sequential business identifiers and are allocated transactionally. Timestamps use canonical ISO-8601 UTC text with a `Z` suffix; calendar periods are interpreted in `America/El_Salvador` and converted to half-open UTC ranges for queries.
+
+## Decision 9 — Android baseline and package set
+
+The Android application ID is `com.rvigil.cafe_pos`, the minimum supported Android version is API 24, and the tablet UI supports both landscape orientations. The initial package set is deliberately limited to `sqflite`, `uuid`, `timezone`, `intl`, `path`, `path_provider`, and `file_picker`. Package versions are locked by `pubspec.lock` and are upgraded only after compatibility checks.
+
+## Decision 10 — Initial backup mechanics
+
+WAL is disabled initially. A future backup operation will prevent new database work, close the SQLite connection, copy the complete database to an app-owned temporary file, reopen the live connection, validate the copy, and then export it through Android Storage Access Framework. Restore performs the inverse validation and replacement under the same application-wide database lock. This decision will be exercised and hardened in Milestone 5.
