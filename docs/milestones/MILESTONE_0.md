@@ -2,12 +2,12 @@
 
 ## Status
 
-- State: `IN_PROGRESS`
+- State: `COMPLETE`
 - Owner: Ruben Vigil
 - Branch: `milestone/0-flutter-bootstrap`
 - Started: 2026-09-26
-- Completed: Pending
-- Approval: Plan approved by the owner on 2026-09-26
+- Completed: 2026-09-29
+- Approval: Plan approved on 2026-09-26; result tested and accepted by the owner on 2026-09-29
 
 ## Objective and output
 
@@ -86,10 +86,12 @@ Create a clean Flutter Android project in this repository without implementing P
 | `flutter run -d emulator-5554 --no-build --no-resident --use-application-binary=build/app/outputs/flutter-apk/app-debug.apk` | Pass | Installed and launched the prebuilt APK without starting Gradle. |
 | `bash -n cafe scripts/*.sh` | Pass | The unified command and all workflow scripts passed Bash syntax validation. |
 | `./cafe check` | Pass | Dependencies, formatting, analysis, and three unit/widget tests passed through the unified command. |
+| `./cafe pair` and `./cafe test` | Pass | The owner confirmed that Wi-Fi pairing and the complete validation workflow work on an Android phone. |
 
 ## Manual demonstration
 
 - Environment/device: Android 16/API 36 `medium_tablet` AVD, 2560x1600, constrained to 1.5 GB RAM and 2 CPU cores.
+- Owner verification device: Android phone connected through wireless debugging; exact model and OS version were not recorded.
 - Initial setup: Fresh Android emulator; debug APK installed; airplane mode enabled for the offline relaunch.
 
 | Step | Action | Expected result | Actual result |
@@ -97,6 +99,7 @@ Create a clean Flutter Android project in this repository without implementing P
 | 1 | Launch the debug app on a tablet emulator. | Bootstrap screen opens without error. | Pass — `Cafe POS` and `Milestone 0 ready` rendered; no Flutter or Android runtime error was logged. |
 | 2 | Rotate between both landscape directions. | App remains landscape and usable. | Pass — activity remained resumed in `land` at `ROTATION_0` and `ROTATION_180`. |
 | 3 | Enable airplane mode and relaunch. | Bootstrap screen opens without network access. | Pass — `airplane_mode_on=1`; the same bootstrap screen rendered. |
+| 4 | Pair an Android phone over Wi-Fi and run the unified validation command. | Pairing, build, tests, installation, and launch complete successfully. | Pass — confirmed by the owner on 2026-09-29. |
 
 ## Review
 
@@ -115,12 +118,13 @@ Create a clean Flutter Android project in this repository without implementing P
 - The default Flutter template allowed an 8 GB Gradle heap, and the API 36 emulator initially reserved 4 GB. Running both exhausted the 7.1 GB host and caused `systemd-oomd` to terminate VS Code.
 - Gradle is now limited to a 1 GB heap, 384 MB metaspace, one worker, and in-process Kotlin compilation. The emulator was verified with 1.5 GB guest RAM and a 2.2 GB service-level hard limit.
 - Build and emulator validation passed when executed sequentially. No Cafe POS, Flutter, or Android runtime crash was found.
-- The workflow scripts now use a connected Android phone or tablet instead of starting an emulator. Device detection and missing-device errors were verified; an authorized physical device was not connected during this run.
-- The `./cafe` entrypoint centralizes Wi-Fi pairing, device listing, fast checks, app launch, offline launch, and full validation. Pairing input validation and no-device behavior were verified locally.
+- The workflow scripts now use a connected Android phone or tablet instead of starting an emulator. Device detection, missing-device errors, and the physical-phone workflow were verified.
+- The `./cafe` entrypoint centralizes Wi-Fi pairing, device listing, fast checks, app launch, offline launch, and full validation. Pairing input validation and no-device behavior were verified locally, and the owner confirmed the connected-device flow.
 
 ## Commits
 
 - `8f67ced feat: bootstrap Flutter Android application`
+- `d09a4a9 docs: record milestone 0 evidence`
 
 ## Remaining limitations or blockers
 
@@ -129,6 +133,6 @@ Create a clean Flutter Android project in this repository without implementing P
 
 ## Completion decision
 
-- [ ] All applicable completion gates in `docs/DEVELOPMENT_WORKFLOW.md` pass.
-- [ ] Owner accepted the milestone.
-- Final state: `IN_PROGRESS`
+- [x] All applicable completion gates in `docs/DEVELOPMENT_WORKFLOW.md` pass.
+- [x] Owner accepted the milestone.
+- Final state: `COMPLETE`
