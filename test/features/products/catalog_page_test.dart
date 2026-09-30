@@ -74,6 +74,27 @@ void main() {
     expect(find.textContaining('El historial no cambiará.'), findsOneWidget);
   });
 
+  testWidgets('category form stays usable with a landscape keyboard viewport', (
+    WidgetTester tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(900, 420));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final CatalogController controller = _controller(_CategoryFake());
+    await tester.pumpWidget(
+      MaterialApp(home: CatalogPage(controller: controller)),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Crear categoría'));
+    await tester.pumpAndSettle();
+    await tester.showKeyboard(find.byType(TextFormField));
+    await tester.pump();
+
+    expect(tester.takeException(), isNull);
+    expect(find.byType(TextFormField), findsOneWidget);
+    expect(find.widgetWithText(FilledButton, 'Guardar'), findsOneWidget);
+  });
+
   testWidgets('shows a recoverable loading error', (WidgetTester tester) async {
     final _CategoryFake categories = _CategoryFake()..failLists = true;
     await tester.pumpWidget(

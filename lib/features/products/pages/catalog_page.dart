@@ -28,6 +28,7 @@ class _CatalogPageState extends State<CatalogPage> {
       animation: widget.controller,
       builder: (BuildContext context, Widget? child) {
         return Scaffold(
+          resizeToAvoidBottomInset: false,
           appBar: AppBar(
             title: const Text('Productos'),
             actions: <Widget>[
@@ -416,6 +417,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      scrollable: true,
       title: Text(
         widget.category == null ? 'Nueva categoría' : 'Editar categoría',
       ),
@@ -485,6 +487,7 @@ class _ProductDialogState extends State<_ProductDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      scrollable: true,
       title: Text(
         widget.product == null ? 'Nuevo producto' : 'Editar producto',
       ),
