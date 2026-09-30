@@ -53,6 +53,7 @@ Widgets must not execute SQL. Domain and application code must not import Flutte
 - Follow `docs/DEVELOPMENT_WORKFLOW.md` for planning, approval, evidence, testing, review, commits, and milestone closure.
 - Implement one verifiable milestone at a time.
 - This is a single-developer repository. Use milestone branches to isolate work, but do not create pull requests unless the owner explicitly requests one. After owner acceptance, fast-forward the milestone branch into `main` and push `main`.
+- Never start an Android emulator, AVD, or QEMU on this development machine; it causes system-wide memory exhaustion. Use the owner's connected physical Android device for Android, SQLite-plugin, installation, and runtime verification. Web runs may support presentation-only UI checks but do not replace required Android verification.
 - Prefer vertical slices that finish with working behavior.
 - Keep business rules in use cases and domain code, not in widgets.
 - Use repositories for persistence access.

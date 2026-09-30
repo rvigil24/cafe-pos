@@ -182,7 +182,7 @@ Demonstrate the milestone output named in `docs/IMPLEMENTATION_PLAN.md`. The evi
 - screenshots or logs when they materially prove the behavior;
 - cleanup or restoration performed.
 
-Use an emulator for routine Android validation. The physical target tablet is mandatory when the milestone or final acceptance criteria require it, especially during hardening and release-candidate validation.
+Never start an Android emulator, AVD, or QEMU on this development machine because it causes system-wide memory exhaustion. Use the owner's connected physical Android device for routine Android validation. Web runs may support presentation-only UI checks but do not replace Android, SQLite-plugin, installation, or runtime verification. The physical target tablet remains mandatory when the milestone or final acceptance criteria require it, especially during hardening and release-candidate validation.
 
 ## 11. Completion gate
 
