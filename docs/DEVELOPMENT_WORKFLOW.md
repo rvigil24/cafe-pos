@@ -167,7 +167,7 @@ Perform a self-review before requesting owner review:
 - confirm affected documentation is current;
 - confirm tests would fail if the implemented rule regressed.
 
-If a remote and pull-request workflow are configured, use one pull request per milestone. Otherwise, present the local diff, validation results, manual demonstration, and commit list for owner review.
+This is a single-developer repository. Do not create a pull request unless the owner explicitly requests one. Present the local diff, validation results, manual demonstration, and commit list directly to the owner for review.
 
 Review findings must be resolved or recorded as an explicit blocker. Deferring required milestone behavior to a later milestone requires owner approval and a documentation update.
 
@@ -209,10 +209,10 @@ After approval:
 
 1. Record the completion date, final commit IDs, and owner acceptance in the evidence file.
 2. Ensure the final evidence update is committed.
-3. Merge the milestone branch through the configured review method, or retain the reviewed commits on `main` when direct work was explicitly authorized.
-4. Push the branch containing the final milestone commits to its configured remote. Set its upstream on the first push. If the reviewed commits were merged or retained on `main`, push `main` as well.
-5. Fetch the remote and confirm that the worktree is clean and the final local branch is neither ahead of nor behind its upstream.
-6. Record the remote branch in the evidence file and report the pushed commit to the owner.
+3. Fast-forward the accepted milestone branch into `main`. Use another merge strategy only when a fast-forward is impossible, and report why.
+4. Push both the milestone branch and `main`. Set the milestone branch upstream on its first push.
+5. Fetch the remote and confirm that the worktree is clean and both local branches match their upstreams.
+6. Record the remote milestone branch and final `main` commit in the evidence file, then report them to the owner.
 7. Do not begin the next milestone until this closure is complete.
 
 Typical commands are:
