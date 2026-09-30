@@ -17,4 +17,18 @@ void main() {
     expect(find.text('Milestone 0 ready'), findsOneWidget);
     expect(find.byIcon(Icons.local_cafe_outlined), findsOneWidget);
   });
+
+  testWidgets('shows a recoverable database initialization error', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      CafePosApp(
+        catalogLoader: () => Future.error(StateError('database unavailable')),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('No se pudo abrir la información local.'), findsOneWidget);
+    expect(find.widgetWithText(FilledButton, 'Reintentar'), findsOneWidget);
+  });
 }
