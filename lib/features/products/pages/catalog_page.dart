@@ -416,16 +416,23 @@ class _CategoryDialogState extends State<_CategoryDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final bool keyboardVisible = MediaQuery.viewInsetsOf(context).bottom > 0;
     return AlertDialog(
-      scrollable: true,
-      title: Text(
-        widget.category == null ? 'Nueva categoría' : 'Editar categoría',
-      ),
+      scrollable: keyboardVisible,
+      title: keyboardVisible
+          ? null
+          : Text(
+              widget.category == null ? 'Nueva categoría' : 'Editar categoría',
+            ),
+      contentPadding: keyboardVisible
+          ? const EdgeInsets.symmetric(horizontal: 24, vertical: 8)
+          : null,
       content: Form(
         key: _formKey,
         child: TextFormField(
           controller: _name,
           autofocus: true,
+          textInputAction: TextInputAction.done,
           decoration: const InputDecoration(labelText: 'Nombre'),
           validator: (String? value) => value == null || value.trim().isEmpty
               ? 'Ingresa un nombre.'
@@ -433,13 +440,15 @@ class _CategoryDialogState extends State<_CategoryDialog> {
           onFieldSubmitted: (_) => _submit(),
         ),
       ),
-      actions: <Widget>[
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
-        ),
-        FilledButton(onPressed: _submit, child: const Text('Guardar')),
-      ],
+      actions: keyboardVisible
+          ? const <Widget>[]
+          : <Widget>[
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancelar'),
+              ),
+              FilledButton(onPressed: _submit, child: const Text('Guardar')),
+            ],
     );
   }
 
@@ -486,11 +495,15 @@ class _ProductDialogState extends State<_ProductDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final bool keyboardVisible = MediaQuery.viewInsetsOf(context).bottom > 0;
     return AlertDialog(
-      scrollable: true,
-      title: Text(
-        widget.product == null ? 'Nuevo producto' : 'Editar producto',
-      ),
+      scrollable: keyboardVisible,
+      title: keyboardVisible
+          ? null
+          : Text(widget.product == null ? 'Nuevo producto' : 'Editar producto'),
+      contentPadding: keyboardVisible
+          ? const EdgeInsets.symmetric(horizontal: 24, vertical: 8)
+          : null,
       content: SizedBox(
         width: 420,
         child: Form(
@@ -515,11 +528,13 @@ class _ProductDialogState extends State<_ProductDialog> {
               TextFormField(
                 controller: _name,
                 autofocus: true,
+                textInputAction: TextInputAction.next,
                 decoration: const InputDecoration(labelText: 'Nombre'),
                 validator: (String? value) =>
                     value == null || value.trim().isEmpty
                     ? 'Ingresa un nombre.'
                     : null,
+                onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
               ),
               const SizedBox(height: 12),
               TextFormField(
@@ -531,6 +546,7 @@ class _ProductDialogState extends State<_ProductDialog> {
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
+                textInputAction: TextInputAction.done,
                 validator: (String? value) {
                   try {
                     parsePriceCents(value ?? '');
@@ -545,13 +561,15 @@ class _ProductDialogState extends State<_ProductDialog> {
           ),
         ),
       ),
-      actions: <Widget>[
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
-        ),
-        FilledButton(onPressed: _submit, child: const Text('Guardar')),
-      ],
+      actions: keyboardVisible
+          ? const <Widget>[]
+          : <Widget>[
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancelar'),
+              ),
+              FilledButton(onPressed: _submit, child: const Text('Guardar')),
+            ],
     );
   }
 

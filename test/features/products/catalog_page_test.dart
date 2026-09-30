@@ -79,6 +79,7 @@ void main() {
   ) async {
     await tester.binding.setSurfaceSize(const Size(900, 420));
     addTearDown(() => tester.binding.setSurfaceSize(null));
+    addTearDown(tester.view.resetViewInsets);
     final CatalogController controller = _controller(_CategoryFake());
     await tester.pumpWidget(
       MaterialApp(home: CatalogPage(controller: controller)),
@@ -88,10 +89,22 @@ void main() {
     await tester.tap(find.byTooltip('Crear categoría'));
     await tester.pumpAndSettle();
     await tester.showKeyboard(find.byType(TextFormField));
-    await tester.pump();
+    tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+    await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
     expect(find.byType(TextFormField), findsOneWidget);
+    expect(
+      tester.getSize(find.byType(TextFormField)).height,
+      greaterThanOrEqualTo(48),
+    );
+    expect(find.text('Nueva categoría'), findsNothing);
+    expect(find.widgetWithText(FilledButton, 'Guardar'), findsNothing);
+
+    tester.testTextInput.hide();
+    tester.view.resetViewInsets();
+    await tester.pumpAndSettle();
+    expect(find.text('Nueva categoría'), findsOneWidget);
     expect(find.widgetWithText(FilledButton, 'Guardar'), findsOneWidget);
   });
 
