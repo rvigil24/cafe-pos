@@ -101,7 +101,7 @@ Configure the first SQLite migration and deliver persistent category and product
 | 3 | Create product `Cafe` at `2.50`, then mark it sold out. | The product and its independent availability state are saved. | Pass — the product card displayed `2.50 · Agotado`. Edit and activation branches also pass automated tests. |
 | 4 | Submit malformed and over-precision prices. | Each invalid value is rejected with a field-associated message. | Pass — widget test verifies the visible validation message; unit tests also cover empty, negative, malformed, comma-decimal, over-precision, and SQLite overflow values. |
 | 5 | Force-stop and relaunch the application. | Catalog contents and state are preserved. | Pass — `Bebidas`, `Cafe`, `2.50`, and `Agotado` remained after two force-stop/relaunch cycles. |
-| 6 | Open catalog forms with the software keyboard in landscape. | Controls remain usable without a render overflow. | Pass after correction — the initial physical-device review exposed an overflow; scrollable forms and a non-resizing catalog scaffold removed it, and a reduced-height widget regression test passes. |
+| 6 | Open catalog forms with the software keyboard in landscape. | Controls remain usable without a render overflow or compressed input. | Pass after correction — forms switch to a compact keyboard state that preserves a minimum 48 px input height and restores the unchanged modal title/actions when the keyboard closes. The owner confirmed on 2026-09-29 that both the test and run workflows pass and the modal issue is resolved. |
 
 ## Review
 
@@ -118,6 +118,8 @@ Configure the first SQLite migration and deliver persistent category and product
 - Fresh schema installation, repeated startup, foreign-key configuration, seeded settings, repository CRUD, sellable catalog visibility, canonical timestamps, persistence, and failed-migration rollback pass against SQLite on Android.
 - Category ordering uses one SQLite transaction. Table deactivation checks for an open order and returns a typed `OccupiedTableError` from the repository foundation.
 - Physical-device review found a keyboard-related render overflow that widget tests had not originally exposed. Commit `f071d7d` makes both forms scrollable, prevents the background scaffold from resizing, and adds a reduced-height regression test. The corrected build was visually rechecked on the device.
+- A follow-up review found that the overflow-free form still compressed its input while the keyboard was visible. Commit `7ffe711` adds an adaptive compact state, keyboard next/done actions, and an explicit regression assertion that the field remains at least 48 px high. The owner verified the final behavior through the project test and run workflows.
+- A later local APK build triggered `systemd-oomd`, which killed the VS Code scope under memory pressure. No emulator was active, no repository data was lost, and no Gradle or emulator process remained. Heavy validation must not be launched again from this constrained VS Code session.
 - `flutter emulators --launch cafe_pos_tablet_api_36` returned without starting a discoverable emulator process. The owner subsequently directed that Android emulation not be used on this machine; all final Android validation used the physical device.
 
 ## Commits
@@ -125,6 +127,7 @@ Configure the first SQLite migration and deliver persistent category and product
 - `863880e feat(database): add initial migration and repositories`
 - `f01e28d feat(catalog): add persistent product management`
 - `f071d7d fix(catalog): keep forms usable with keyboard`
+- `7ffe711 fix(catalog): preserve form height above keyboard`
 - Evidence update: pending commit.
 
 ## Remaining limitations or blockers
