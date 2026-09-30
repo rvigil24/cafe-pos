@@ -7,8 +7,8 @@
 - Branch: `milestone/1-database-catalog`
 - Remote branch: Pending
 - Started: 2026-09-29
-- Completed:
-- Approval: Plan approved by the owner on 2026-09-29
+- Completed: Pending remote closure
+- Approval: Plan approved on 2026-09-29; final test/run and corrected modal verified and accepted by the owner on 2026-09-29
 
 ## Objective and output
 
@@ -128,16 +128,17 @@ Configure the first SQLite migration and deliver persistent category and product
 - `f01e28d feat(catalog): add persistent product management`
 - `f071d7d fix(catalog): keep forms usable with keyboard`
 - `7ffe711 fix(catalog): preserve form height above keyboard`
-- Evidence update: pending commit.
+- `aa90be1 docs: record milestone 1 evidence`
+- `ada2117 docs: record final keyboard verification`
+- Closure update: pending commit.
 
 ## Remaining limitations or blockers
 
-- Owner review and acceptance are pending.
-- The branch has not been pushed yet; closure requires owner acceptance, the final evidence commit, push, and upstream verification.
+- The branch has not been pushed yet; closure requires the final evidence commit, push, and upstream verification.
 - Android emulation is intentionally disabled for this machine by owner direction; future local device checks should use the connected physical device. Web can be used for presentation-only UI work, but it cannot replace Android SQLite/plugin verification.
 
 ## Completion decision
 
-- [ ] All applicable completion gates in `docs/DEVELOPMENT_WORKFLOW.md` pass.
-- [ ] Owner accepted the milestone.
+- [ ] All applicable completion gates in `docs/DEVELOPMENT_WORKFLOW.md` pass; remote push verification remains.
+- [x] Owner accepted the milestone.
 - Final state: `IN_PROGRESS`
