@@ -7,13 +7,17 @@ import '../database/app_database.dart';
 import 'sqlite_repository_support.dart';
 
 class SqliteSettingsRepository implements SettingsRepository {
-  const SqliteSettingsRepository(this._provider);
+  SqliteSettingsRepository(AppDatabase provider)
+    : _executor = (() => provider.database);
 
-  final AppDatabase _provider;
+  SqliteSettingsRepository.executor(DatabaseExecutor executor)
+    : _executor = (() async => executor);
+
+  final Future<DatabaseExecutor> Function() _executor;
 
   @override
   Future<AppSettings> load() async {
-    final Database database = await _provider.database;
+    final DatabaseExecutor database = await _executor();
     final List<Map<String, Object?>> rows = await database.query('settings');
     final Map<String, String> values = <String, String>{
       for (final Map<String, Object?> row in rows)
@@ -38,7 +42,7 @@ class SqliteSettingsRepository implements SettingsRepository {
 
   @override
   Future<void> setValue(String key, String value, DateTime updatedAt) async {
-    final Database database = await _provider.database;
+    final DatabaseExecutor database = await _executor();
     final int count = await database.update(
       'settings',
       <String, Object?>{'value': value, 'updated_at': timestamp(updatedAt)},
@@ -48,5 +52,38 @@ class SqliteSettingsRepository implements SettingsRepository {
     if (count != 1) {
       throw EntityNotFoundError('No existe el ajuste "$key".');
     }
+  }
+
+  @override
+  Future<int> allocateNextOrderNumber(DateTime updatedAt) async {
+    final DatabaseExecutor database = await _executor();
+    final int count = await database.rawUpdate(
+      '''
+      UPDATE settings
+      SET value = CAST(value AS INTEGER) + 1, updated_at = ?
+      WHERE key = 'last_order_number'
+        AND length(value) > 0
+        AND value NOT GLOB '*[^0-9]*'
+        AND CAST(value AS INTEGER) >= 0
+      ''',
+      <Object?>[timestamp(updatedAt)],
+    );
+    if (count != 1) {
+      throw const PersistenceError('No se pudo reservar el número de orden.');
+    }
+    final List<Map<String, Object?>> rows = await database.query(
+      'settings',
+      columns: <String>['value'],
+      where: 'key = ?',
+      whereArgs: <Object?>['last_order_number'],
+      limit: 1,
+    );
+    final int? value = rows.isEmpty
+        ? null
+        : int.tryParse(rows.single['value']! as String);
+    if (value == null || value <= 0) {
+      throw const PersistenceError('El número de orden local está dañado.');
+    }
+    return value;
   }
 }

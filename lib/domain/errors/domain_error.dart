@@ -25,6 +25,18 @@ final class OccupiedTableError extends DomainError {
   const OccupiedTableError(super.message);
 }
 
+final class TableUnavailableError extends DomainError {
+  const TableUnavailableError(super.message);
+}
+
+final class OrderNotEditableError extends DomainError {
+  const OrderNotEditableError(super.message);
+}
+
+final class ProductUnavailableError extends DomainError {
+  const ProductUnavailableError(super.message);
+}
+
 final class PersistenceError extends DomainError {
   const PersistenceError(super.message);
 }

@@ -7,13 +7,17 @@ import '../database/app_database.dart';
 import 'sqlite_repository_support.dart';
 
 class SqliteProductRepository implements ProductRepository {
-  const SqliteProductRepository(this._provider);
+  SqliteProductRepository(AppDatabase provider)
+    : _executor = (() => provider.database);
 
-  final AppDatabase _provider;
+  SqliteProductRepository.executor(DatabaseExecutor executor)
+    : _executor = (() async => executor);
+
+  final Future<DatabaseExecutor> Function() _executor;
 
   @override
   Future<List<Product>> listAll({String? categoryId}) async {
-    final Database database = await _provider.database;
+    final DatabaseExecutor database = await _executor();
     final List<Map<String, Object?>> rows = await database.query(
       'products',
       where: categoryId == null ? null : 'category_id = ?',
@@ -25,7 +29,7 @@ class SqliteProductRepository implements ProductRepository {
 
   @override
   Future<List<Product>> listSellable({String? categoryId}) async {
-    final Database database = await _provider.database;
+    final DatabaseExecutor database = await _executor();
     final List<Object?> arguments = <Object?>[];
     final StringBuffer where = StringBuffer(
       'p.is_active = 1 AND p.is_available = 1 AND c.is_active = 1',
@@ -45,7 +49,7 @@ class SqliteProductRepository implements ProductRepository {
 
   @override
   Future<Product?> findById(String id) async {
-    final Database database = await _provider.database;
+    final DatabaseExecutor database = await _executor();
     final List<Map<String, Object?>> rows = await database.query(
       'products',
       where: 'id = ?',
@@ -58,7 +62,7 @@ class SqliteProductRepository implements ProductRepository {
   @override
   Future<void> create(Product product) async {
     try {
-      final Database database = await _provider.database;
+      final DatabaseExecutor database = await _executor();
       await database.insert('products', _toRow(product));
     } on DatabaseException catch (error) {
       translateDatabaseError(error, 'No se pudo crear el producto.');
@@ -68,7 +72,7 @@ class SqliteProductRepository implements ProductRepository {
   @override
   Future<void> update(Product product) async {
     try {
-      final Database database = await _provider.database;
+      final DatabaseExecutor database = await _executor();
       final int count = await database.update(
         'products',
         <String, Object?>{

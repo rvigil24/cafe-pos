@@ -7,13 +7,20 @@ import '../database/app_database.dart';
 import 'sqlite_repository_support.dart';
 
 class SqliteTableRepository implements TableRepository {
-  const SqliteTableRepository(this._provider);
+  SqliteTableRepository(AppDatabase provider)
+    : _executor = (() => provider.database),
+      _database = provider;
 
-  final AppDatabase _provider;
+  SqliteTableRepository.executor(DatabaseExecutor executor)
+    : _executor = (() async => executor),
+      _database = null;
+
+  final Future<DatabaseExecutor> Function() _executor;
+  final AppDatabase? _database;
 
   @override
   Future<List<CafeTable>> listAll() async {
-    final Database database = await _provider.database;
+    final DatabaseExecutor database = await _executor();
     final List<Map<String, Object?>> rows = await database.query(
       'cafe_tables',
       orderBy: 'sort_order ASC, name COLLATE NOCASE ASC',
@@ -23,7 +30,7 @@ class SqliteTableRepository implements TableRepository {
 
   @override
   Future<CafeTable?> findById(String id) async {
-    final Database database = await _provider.database;
+    final DatabaseExecutor database = await _executor();
     final List<Map<String, Object?>> rows = await database.query(
       'cafe_tables',
       where: 'id = ?',
@@ -34,9 +41,18 @@ class SqliteTableRepository implements TableRepository {
   }
 
   @override
+  Future<int> nextSortOrder() async {
+    final DatabaseExecutor database = await _executor();
+    final int? maximum = Sqflite.firstIntValue(
+      await database.rawQuery('SELECT MAX(sort_order) FROM cafe_tables'),
+    );
+    return (maximum ?? -1) + 1;
+  }
+
+  @override
   Future<void> create(CafeTable table) async {
     try {
-      final Database database = await _provider.database;
+      final DatabaseExecutor database = await _executor();
       await database.insert('cafe_tables', _toRow(table));
     } on DatabaseException catch (error) {
       translateDatabaseError(error, 'No se pudo crear la mesa.');
@@ -46,8 +62,7 @@ class SqliteTableRepository implements TableRepository {
   @override
   Future<void> update(CafeTable table) async {
     try {
-      final Database database = await _provider.database;
-      await database.transaction<void>((Transaction transaction) async {
+      Future<void> operation(DatabaseExecutor transaction) async {
         if (!table.isActive) {
           final int openOrders = Sqflite.firstIntValue(
             await transaction.rawQuery(
@@ -75,9 +90,56 @@ class SqliteTableRepository implements TableRepository {
         if (count != 1) {
           throw const EntityNotFoundError('La mesa ya no existe.');
         }
-      });
+      }
+
+      final AppDatabase? provider = _database;
+      if (provider == null) {
+        await operation(await _executor());
+      } else {
+        final Database database = await provider.database;
+        await database.transaction<void>(operation);
+      }
     } on DatabaseException catch (error) {
       translateDatabaseError(error, 'No se pudo guardar la mesa.');
+    }
+  }
+
+  @override
+  Future<void> reorder(String id, int newIndex, DateTime updatedAt) async {
+    Future<void> operation(DatabaseExecutor transaction) async {
+      final List<Map<String, Object?>> rows = await transaction.query(
+        'cafe_tables',
+        columns: <String>['id'],
+        orderBy: 'sort_order ASC, name COLLATE NOCASE ASC',
+      );
+      final List<String> ids = rows
+          .map((Map<String, Object?> row) => row['id']! as String)
+          .toList();
+      if (!ids.remove(id)) {
+        throw const EntityNotFoundError('La mesa ya no existe.');
+      }
+      ids.insert(newIndex.clamp(0, ids.length), id);
+      final Batch batch = transaction.batch();
+      for (int index = 0; index < ids.length; index += 1) {
+        batch.update(
+          'cafe_tables',
+          <String, Object?>{
+            'sort_order': index,
+            'updated_at': timestamp(updatedAt),
+          },
+          where: 'id = ?',
+          whereArgs: <Object?>[ids[index]],
+        );
+      }
+      await batch.commit(noResult: true);
+    }
+
+    final AppDatabase? provider = _database;
+    if (provider == null) {
+      await operation(await _executor());
+    } else {
+      final Database database = await provider.database;
+      await database.transaction<void>(operation);
     }
   }
 

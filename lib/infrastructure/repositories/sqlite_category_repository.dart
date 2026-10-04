@@ -7,13 +7,20 @@ import '../database/app_database.dart';
 import 'sqlite_repository_support.dart';
 
 class SqliteCategoryRepository implements CategoryRepository {
-  const SqliteCategoryRepository(this._provider);
+  SqliteCategoryRepository(AppDatabase provider)
+    : _executor = (() => provider.database),
+      _database = provider;
 
-  final AppDatabase _provider;
+  SqliteCategoryRepository.executor(DatabaseExecutor executor)
+    : _executor = (() async => executor),
+      _database = null;
+
+  final Future<DatabaseExecutor> Function() _executor;
+  final AppDatabase? _database;
 
   @override
   Future<List<Category>> listAll() async {
-    final Database database = await _provider.database;
+    final DatabaseExecutor database = await _executor();
     final List<Map<String, Object?>> rows = await database.query(
       'categories',
       orderBy: 'sort_order ASC, name COLLATE NOCASE ASC',
@@ -23,7 +30,7 @@ class SqliteCategoryRepository implements CategoryRepository {
 
   @override
   Future<Category?> findById(String id) async {
-    final Database database = await _provider.database;
+    final DatabaseExecutor database = await _executor();
     final List<Map<String, Object?>> rows = await database.query(
       'categories',
       where: 'id = ?',
@@ -35,7 +42,7 @@ class SqliteCategoryRepository implements CategoryRepository {
 
   @override
   Future<int> nextSortOrder() async {
-    final Database database = await _provider.database;
+    final DatabaseExecutor database = await _executor();
     final int? maximum = Sqflite.firstIntValue(
       await database.rawQuery('SELECT MAX(sort_order) FROM categories'),
     );
@@ -45,7 +52,7 @@ class SqliteCategoryRepository implements CategoryRepository {
   @override
   Future<void> create(Category category) async {
     try {
-      final Database database = await _provider.database;
+      final DatabaseExecutor database = await _executor();
       await database.insert('categories', _toRow(category));
     } on DatabaseException catch (error) {
       translateDatabaseError(error, 'No se pudo crear la categoría.');
@@ -55,7 +62,7 @@ class SqliteCategoryRepository implements CategoryRepository {
   @override
   Future<void> update(Category category) async {
     try {
-      final Database database = await _provider.database;
+      final DatabaseExecutor database = await _executor();
       final int count = await database.update(
         'categories',
         <String, Object?>{
@@ -77,8 +84,7 @@ class SqliteCategoryRepository implements CategoryRepository {
 
   @override
   Future<void> reorder(String id, int newIndex, DateTime updatedAt) async {
-    final Database database = await _provider.database;
-    await database.transaction<void>((Transaction transaction) async {
+    Future<void> operation(DatabaseExecutor transaction) async {
       final List<Map<String, Object?>> rows = await transaction.query(
         'categories',
         columns: <String>['id'],
@@ -104,7 +110,15 @@ class SqliteCategoryRepository implements CategoryRepository {
         );
       }
       await batch.commit(noResult: true);
-    });
+    }
+
+    final AppDatabase? provider = _database;
+    if (provider == null) {
+      await operation(await _executor());
+    } else {
+      final Database database = await provider.database;
+      await database.transaction<void>(operation);
+    }
   }
 
   Category _fromRow(Map<String, Object?> row) {

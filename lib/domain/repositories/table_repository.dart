@@ -5,7 +5,11 @@ abstract interface class TableRepository {
 
   Future<CafeTable?> findById(String id);
 
+  Future<int> nextSortOrder();
+
   Future<void> create(CafeTable table);
 
   Future<void> update(CafeTable table);
+
+  Future<void> reorder(String id, int newIndex, DateTime updatedAt);
 }
