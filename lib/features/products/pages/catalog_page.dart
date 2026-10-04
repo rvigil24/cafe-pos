@@ -418,7 +418,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
   Widget build(BuildContext context) {
     final bool keyboardVisible = MediaQuery.viewInsetsOf(context).bottom > 0;
     return AlertDialog(
-      scrollable: keyboardVisible,
+      scrollable: true,
       title: keyboardVisible
           ? null
           : Text(
@@ -497,7 +497,7 @@ class _ProductDialogState extends State<_ProductDialog> {
   Widget build(BuildContext context) {
     final bool keyboardVisible = MediaQuery.viewInsetsOf(context).bottom > 0;
     return AlertDialog(
-      scrollable: keyboardVisible,
+      scrollable: true,
       title: keyboardVisible
           ? null
           : Text(widget.product == null ? 'Nuevo producto' : 'Editar producto'),

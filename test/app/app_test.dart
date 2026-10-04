@@ -23,7 +23,8 @@ void main() {
   ) async {
     await tester.pumpWidget(
       CafePosApp(
-        catalogLoader: () => Future.error(StateError('database unavailable')),
+        dependenciesLoader: () =>
+            Future.error(StateError('database unavailable')),
       ),
     );
     await tester.pumpAndSettle();

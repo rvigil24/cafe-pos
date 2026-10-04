@@ -108,6 +108,37 @@ void main() {
     expect(find.widgetWithText(FilledButton, 'Guardar'), findsOneWidget);
   });
 
+  testWidgets('product form remains scrollable in a short landscape viewport', (
+    WidgetTester tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(900, 420));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    addTearDown(tester.view.resetViewInsets);
+    final _CategoryFake categories = _CategoryFake()
+      ..values.add(_category('category-1', 'Bebidas'));
+    await tester.pumpWidget(
+      MaterialApp(home: CatalogPage(controller: _controller(categories))),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Nuevo producto'));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    expect(find.text('Nuevo producto'), findsWidgets);
+
+    await tester.showKeyboard(find.byType(TextFormField).first);
+    tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    expect(find.byType(TextFormField), findsNWidgets(2));
+
+    tester.testTextInput.hide();
+    tester.view.resetViewInsets();
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    expect(find.widgetWithText(FilledButton, 'Guardar'), findsOneWidget);
+  });
+
   testWidgets('shows a recoverable loading error', (WidgetTester tester) async {
     final _CategoryFake categories = _CategoryFake()..failLists = true;
     await tester.pumpWidget(
