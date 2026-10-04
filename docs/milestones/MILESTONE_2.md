@@ -2,12 +2,12 @@
 
 ## Status
 
-- State: `IN_PROGRESS`
+- State: `COMPLETE`
 - Owner: Ruben Vigil
 - Branch: `milestone/2-tables-open-orders`
-- Remote branch: Pending
+- Remote branch: `origin/milestone/2-tables-open-orders`
 - Started: 2026-10-03
-- Completed:
+- Completed: 2026-10-03
 - Approval: Plan approved and milestone result accepted by the owner on 2026-10-03
 
 ## Objective and output
@@ -133,14 +133,15 @@ state without taking payment.
 - `0447e7f feat(orders): add transactional open order persistence`
 - `425f28c feat(pos): add tables and open order workflow`
 - `283afdf docs: record milestone 2 evidence`
+- `f093d5d docs: record milestone 2 acceptance`
 
 ## Remaining limitations or blockers
 
-- Remote publication and fast-forward integration are pending.
+- No milestone blockers remain.
 - Payments remain intentionally excluded until Milestone 3.
 
 ## Completion decision
 
-- [ ] All applicable completion gates in `docs/DEVELOPMENT_WORKFLOW.md` pass.
+- [x] All applicable completion gates in `docs/DEVELOPMENT_WORKFLOW.md` pass.
 - [x] Owner accepted the milestone.
-- Final state: `IN_PROGRESS`
+- Final state: `COMPLETE`
