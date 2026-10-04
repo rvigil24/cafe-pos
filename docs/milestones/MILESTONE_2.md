@@ -8,7 +8,7 @@
 - Remote branch: Pending
 - Started: 2026-10-03
 - Completed:
-- Approval: Plan approved by the owner on 2026-10-03
+- Approval: Plan approved and milestone result accepted by the owner on 2026-10-03
 
 ## Objective and output
 
@@ -132,15 +132,15 @@ state without taking payment.
 
 - `0447e7f feat(orders): add transactional open order persistence`
 - `425f28c feat(pos): add tables and open order workflow`
+- `283afdf docs: record milestone 2 evidence`
 
 ## Remaining limitations or blockers
 
-- Owner review and acceptance are pending.
-- The milestone branch has not been pushed or merged while review is pending.
+- Remote publication and fast-forward integration are pending.
 - Payments remain intentionally excluded until Milestone 3.
 
 ## Completion decision
 
 - [ ] All applicable completion gates in `docs/DEVELOPMENT_WORKFLOW.md` pass.
-- [ ] Owner accepted the milestone.
+- [x] Owner accepted the milestone.
 - Final state: `IN_PROGRESS`
