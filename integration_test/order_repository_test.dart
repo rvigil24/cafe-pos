@@ -4,18 +4,21 @@ import 'package:cafe_pos/application/services/id_generator.dart';
 import 'package:cafe_pos/application/services/transaction_runner.dart';
 import 'package:cafe_pos/application/use_cases/catalog_use_cases.dart';
 import 'package:cafe_pos/application/use_cases/order_use_cases.dart';
+import 'package:cafe_pos/application/use_cases/payment_use_cases.dart';
 import 'package:cafe_pos/application/use_cases/table_use_cases.dart';
 import 'package:cafe_pos/domain/entities/cafe_table.dart';
 import 'package:cafe_pos/domain/entities/category.dart';
 import 'package:cafe_pos/domain/entities/order.dart';
 import 'package:cafe_pos/domain/entities/order_details.dart';
 import 'package:cafe_pos/domain/entities/order_item.dart';
+import 'package:cafe_pos/domain/entities/payment.dart';
 import 'package:cafe_pos/domain/entities/product.dart';
 import 'package:cafe_pos/domain/errors/domain_error.dart';
 import 'package:cafe_pos/infrastructure/database/app_database.dart';
 import 'package:cafe_pos/infrastructure/database/sqlite_transaction_runner.dart';
 import 'package:cafe_pos/infrastructure/repositories/sqlite_category_repository.dart';
 import 'package:cafe_pos/infrastructure/repositories/sqlite_order_repository.dart';
+import 'package:cafe_pos/infrastructure/repositories/sqlite_payment_repository.dart';
 import 'package:cafe_pos/infrastructure/repositories/sqlite_product_repository.dart';
 import 'package:cafe_pos/infrastructure/repositories/sqlite_settings_repository.dart';
 import 'package:cafe_pos/infrastructure/repositories/sqlite_table_repository.dart';
@@ -227,6 +230,79 @@ void main() {
     );
     await fixture.provider.close();
   });
+
+  testWidgets('pays atomically, prevents duplicates, and records card', (
+    WidgetTester tester,
+  ) async {
+    final _Fixture fixture = await _Fixture.create(databasePath, now);
+    final Order dineIn = await fixture.orders.createDineIn(fixture.table.id);
+    await fixture.orders.addProduct(dineIn.id, fixture.product.id);
+
+    final PaymentResult cash = await fixture.payments.pay(
+      orderId: dineIn.id,
+      method: PaymentMethod.cash,
+      receivedCents: 500,
+    );
+    expect(cash.payment.amountCents, 250);
+    expect(cash.changeCents, 250);
+    expect(
+      (await fixture.orders.loadOrder(dineIn.id)).order.status,
+      OrderStatus.paid,
+    );
+    expect(
+      (await fixture.orders.loadHome()).orderForTable(fixture.table.id),
+      isNull,
+    );
+    expect(
+      (await fixture.paymentRepository.findByOrderId(dineIn.id))!.method,
+      PaymentMethod.cash,
+    );
+    await expectLater(
+      fixture.payments.pay(
+        orderId: dineIn.id,
+        method: PaymentMethod.cash,
+        receivedCents: 500,
+      ),
+      throwsA(isA<DuplicatePaymentError>()),
+    );
+
+    final Order rollbackOrder = await fixture.orders.createTakeaway();
+    await fixture.orders.addProduct(rollbackOrder.id, fixture.product.id);
+    final Database database = await fixture.provider.database;
+    await database.execute(
+      'CREATE TRIGGER fail_paid BEFORE UPDATE OF status ON orders '
+      "WHEN NEW.id = '${rollbackOrder.id}' AND NEW.status = 'PAID' "
+      "BEGIN SELECT RAISE(ABORT, 'injected payment failure'); END",
+    );
+    await expectLater(
+      fixture.payments.pay(
+        orderId: rollbackOrder.id,
+        method: PaymentMethod.transfer,
+        manualConfirmed: true,
+      ),
+      throwsA(isA<PersistenceError>()),
+    );
+    expect(
+      await fixture.paymentRepository.findByOrderId(rollbackOrder.id),
+      isNull,
+    );
+    expect(
+      (await fixture.orders.loadOrder(rollbackOrder.id)).order.status,
+      OrderStatus.open,
+    );
+    await database.execute('DROP TRIGGER fail_paid');
+
+    final PaymentResult card = await fixture.payments.pay(
+      orderId: rollbackOrder.id,
+      method: PaymentMethod.creditCard,
+      reference: 'must-be-ignored',
+      manualConfirmed: true,
+    );
+    expect(card.payment.method, PaymentMethod.creditCard);
+    expect(card.payment.reference, isNull);
+    expect(card.payment.receivedCents, isNull);
+    await fixture.provider.close();
+  });
 }
 
 class _Fixture {
@@ -235,11 +311,13 @@ class _Fixture {
     required this.catalog,
     required this.tables,
     required this.orders,
+    required this.payments,
     required this.transactions,
     required this.categoryRepository,
     required this.productRepository,
     required this.tableRepository,
     required this.orderRepository,
+    required this.paymentRepository,
     required this.settings,
     required this.category,
     required this.product,
@@ -250,11 +328,13 @@ class _Fixture {
   final CatalogUseCases catalog;
   final TableUseCases tables;
   final OrderUseCases orders;
+  final PaymentUseCases payments;
   final SqliteTransactionRunner transactions;
   final SqliteCategoryRepository categoryRepository;
   final SqliteProductRepository productRepository;
   final SqliteTableRepository tableRepository;
   final SqliteOrderRepository orderRepository;
+  final SqlitePaymentRepository paymentRepository;
   final SqliteSettingsRepository settings;
   final Category category;
   final Product product;
@@ -280,11 +360,13 @@ class _Fixture {
       catalog: base.catalog,
       tables: base.tables,
       orders: base.orders,
+      payments: base.payments,
       transactions: base.transactions,
       categoryRepository: base.categoryRepository,
       productRepository: base.productRepository,
       tableRepository: base.tableRepository,
       orderRepository: base.orderRepository,
+      paymentRepository: base.paymentRepository,
       settings: base.settings,
       category: category,
       product: product,
@@ -308,11 +390,13 @@ class _Fixture {
       catalog: base.catalog,
       tables: base.tables,
       orders: base.orders,
+      payments: base.payments,
       transactions: base.transactions,
       categoryRepository: base.categoryRepository,
       productRepository: base.productRepository,
       tableRepository: base.tableRepository,
       orderRepository: base.orderRepository,
+      paymentRepository: base.paymentRepository,
       settings: base.settings,
       category: (await base.categoryRepository.listAll()).single,
       product: (await base.productRepository.listAll()).single,
@@ -331,6 +415,7 @@ class _Fixture {
     final SqliteProductRepository products = SqliteProductRepository(provider);
     final SqliteTableRepository tables = SqliteTableRepository(provider);
     final SqliteOrderRepository orders = SqliteOrderRepository(provider);
+    final SqlitePaymentRepository payments = SqlitePaymentRepository(provider);
     final SqliteSettingsRepository settings = SqliteSettingsRepository(
       provider,
     );
@@ -355,11 +440,18 @@ class _Fixture {
         ids: ids,
         clock: () => now,
       ),
+      payments: PaymentUseCases(
+        orders: orders,
+        transactions: transactions,
+        ids: ids,
+        clock: () => now,
+      ),
       transactions: transactions,
       categoryRepository: categories,
       productRepository: products,
       tableRepository: tables,
       orderRepository: orders,
+      paymentRepository: payments,
       settings: settings,
       category: Category(
         id: '',

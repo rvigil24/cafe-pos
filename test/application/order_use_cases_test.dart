@@ -16,6 +16,7 @@ void main() {
   late FakeProductRepository products;
   late FakeTableRepository tables;
   late FakeOrderRepository orders;
+  late FakePaymentRepository payments;
   late FakeSettingsRepository settings;
   late OrderUseCases useCases;
   late CafeTable table;
@@ -27,6 +28,7 @@ void main() {
     products = FakeProductRepository();
     tables = FakeTableRepository();
     orders = FakeOrderRepository();
+    payments = FakePaymentRepository();
     settings = FakeSettingsRepository();
     table = CafeTable(
       id: 'table-1',
@@ -62,6 +64,7 @@ void main() {
       products: products,
       tables: tables,
       orders: orders,
+      payments: payments,
       settings: settings,
     );
     useCases = OrderUseCases(

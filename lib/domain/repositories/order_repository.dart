@@ -18,4 +18,6 @@ abstract interface class OrderRepository {
   Future<void> updateTotal(String orderId, int totalCents, DateTime updatedAt);
 
   Future<void> cancel(String orderId, String reason, DateTime cancelledAt);
+
+  Future<void> markPaid(String orderId, DateTime paidAt);
 }

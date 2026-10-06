@@ -3,6 +3,7 @@ import 'package:sqflite/sqflite.dart';
 import '../../application/services/transaction_runner.dart';
 import '../repositories/sqlite_category_repository.dart';
 import '../repositories/sqlite_order_repository.dart';
+import '../repositories/sqlite_payment_repository.dart';
 import '../repositories/sqlite_product_repository.dart';
 import '../repositories/sqlite_settings_repository.dart';
 import '../repositories/sqlite_table_repository.dart';
@@ -25,6 +26,7 @@ class SqliteTransactionRunner implements TransactionRunner {
           products: SqliteProductRepository.executor(transaction),
           tables: SqliteTableRepository.executor(transaction),
           orders: SqliteOrderRepository.executor(transaction),
+          payments: SqlitePaymentRepository.executor(transaction),
           settings: SqliteSettingsRepository.executor(transaction),
         ),
       );

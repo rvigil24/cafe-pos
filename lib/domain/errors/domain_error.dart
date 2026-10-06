@@ -37,6 +37,14 @@ final class ProductUnavailableError extends DomainError {
   const ProductUnavailableError(super.message);
 }
 
+final class DuplicatePaymentError extends DomainError {
+  const DuplicatePaymentError(super.message);
+}
+
+final class PaymentNotAllowedError extends DomainError {
+  const PaymentNotAllowedError(super.message);
+}
+
 final class PersistenceError extends DomainError {
   const PersistenceError(super.message);
 }

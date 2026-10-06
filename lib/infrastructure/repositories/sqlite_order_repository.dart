@@ -161,6 +161,32 @@ class SqliteOrderRepository implements OrderRepository {
     }
   }
 
+  @override
+  Future<void> markPaid(String orderId, DateTime paidAt) async {
+    final DatabaseExecutor database = await _executor();
+    try {
+      final int count = await database.update(
+        'orders',
+        <String, Object?>{
+          'status': 'PAID',
+          'updated_at': timestamp(paidAt),
+          'paid_at': timestamp(paidAt),
+        },
+        where:
+            "id = ? AND status = 'OPEN' AND EXISTS ("
+            'SELECT 1 FROM payments WHERE order_id = ?'
+            ')',
+        whereArgs: <Object?>[orderId, orderId],
+      );
+      if (count != 1) {
+        await _requireOpen(database, orderId);
+        throw const PersistenceError('No se pudo completar el pago.');
+      }
+    } on DatabaseException catch (error) {
+      translateDatabaseError(error, 'No se pudo completar el pago.');
+    }
+  }
+
   Future<void> _requireOpen(DatabaseExecutor database, String orderId) async {
     final List<Map<String, Object?>> rows = await database.query(
       'orders',

@@ -6,10 +6,12 @@ import 'package:cafe_pos/domain/entities/category.dart';
 import 'package:cafe_pos/domain/entities/order.dart';
 import 'package:cafe_pos/domain/entities/order_details.dart';
 import 'package:cafe_pos/domain/entities/order_item.dart';
+import 'package:cafe_pos/domain/entities/payment.dart';
 import 'package:cafe_pos/domain/entities/product.dart';
 import 'package:cafe_pos/domain/errors/domain_error.dart';
 import 'package:cafe_pos/domain/repositories/category_repository.dart';
 import 'package:cafe_pos/domain/repositories/order_repository.dart';
+import 'package:cafe_pos/domain/repositories/payment_repository.dart';
 import 'package:cafe_pos/domain/repositories/product_repository.dart';
 import 'package:cafe_pos/domain/repositories/settings_repository.dart';
 import 'package:cafe_pos/domain/repositories/table_repository.dart';
@@ -260,6 +262,16 @@ class FakeOrderRepository implements OrderRepository {
     );
   }
 
+  @override
+  Future<void> markPaid(String orderId, DateTime paidAt) async {
+    final int index = _requireOpen(orderId);
+    orders[index] = orders[index].copyWith(
+      status: OrderStatus.paid,
+      updatedAt: paidAt,
+      paidAt: paidAt,
+    );
+  }
+
   int _requireOpen(String id) {
     final int index = orders.indexWhere((Order order) => order.id == id);
     if (index < 0) {
@@ -271,6 +283,30 @@ class FakeOrderRepository implements OrderRepository {
       );
     }
     return index;
+  }
+}
+
+class FakePaymentRepository implements PaymentRepository {
+  final List<Payment> values = <Payment>[];
+  Object? createError;
+
+  @override
+  Future<void> create(Payment payment) async {
+    final Object? error = createError;
+    if (error != null) {
+      throw error;
+    }
+    if (values.any((Payment value) => value.orderId == payment.orderId)) {
+      throw const DuplicatePaymentError('La orden ya fue pagada.');
+    }
+    values.add(payment);
+  }
+
+  @override
+  Future<Payment?> findByOrderId(String orderId) async {
+    return values
+        .where((Payment value) => value.orderId == orderId)
+        .firstOrNull;
   }
 }
 
