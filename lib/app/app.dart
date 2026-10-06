@@ -4,6 +4,8 @@ import '../features/home/controllers/home_controller.dart';
 import '../features/home/pages/home_page.dart';
 import '../features/orders/controllers/order_controller.dart';
 import '../features/orders/pages/order_page.dart';
+import '../features/payments/controllers/payment_controller.dart';
+import '../features/payments/pages/payment_page.dart';
 import '../features/products/controllers/catalog_controller.dart';
 import '../features/products/pages/catalog_page.dart';
 import '../features/tables/controllers/table_controller.dart';
@@ -102,6 +104,7 @@ class _CafeShellState extends State<CafeShell> {
   );
   int _section = 0;
   OrderController? _order;
+  PaymentController? _payment;
 
   @override
   void dispose() {
@@ -109,6 +112,7 @@ class _CafeShellState extends State<CafeShell> {
     _catalog.dispose();
     _tables.dispose();
     _order?.dispose();
+    _payment?.dispose();
     super.dispose();
   }
 
@@ -153,6 +157,15 @@ class _CafeShellState extends State<CafeShell> {
   }
 
   Widget _content() {
+    final PaymentController? payment = _payment;
+    if (payment != null) {
+      return PaymentPage(
+        key: ValueKey<String>('payment-${payment.orderId}'),
+        controller: payment,
+        onBack: () => _returnToOrder(payment.orderId),
+        onPaid: (_) => _closeOrder(),
+      );
+    }
     final OrderController? order = _order;
     if (order != null) {
       return OrderPage(
@@ -160,6 +173,7 @@ class _CafeShellState extends State<CafeShell> {
         controller: order,
         onClose: _closeOrder,
         onCancelled: _closeOrder,
+        onProceedToPayment: () => _openPayment(order.orderId),
       );
     }
     return switch (_section) {
@@ -175,24 +189,46 @@ class _CafeShellState extends State<CafeShell> {
   }
 
   void _selectSection(int value) {
+    if (_payment?.isSubmitting == true) {
+      return;
+    }
     _order?.dispose();
+    _payment?.dispose();
     setState(() {
       _order = null;
+      _payment = null;
       _section = value;
     });
   }
 
   void _openOrder(String id) {
     _order?.dispose();
+    _payment?.dispose();
     setState(() {
+      _payment = null;
       _order = OrderController(widget.dependencies.orders, id);
     });
   }
 
-  void _closeOrder() {
+  void _openPayment(String id) {
     _order?.dispose();
+    _payment?.dispose();
     setState(() {
       _order = null;
+      _payment = PaymentController(widget.dependencies.payments, id);
+    });
+  }
+
+  void _returnToOrder(String id) {
+    _openOrder(id);
+  }
+
+  void _closeOrder() {
+    _order?.dispose();
+    _payment?.dispose();
+    setState(() {
+      _order = null;
+      _payment = null;
       _section = 0;
     });
     _home.load();

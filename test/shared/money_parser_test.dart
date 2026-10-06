@@ -28,4 +28,18 @@ void main() {
     expect(formatPriceCents(5), '0.05');
     expect(formatPriceCents(1234), '12.34');
   });
+
+  test('parses received cash with field-specific validation', () {
+    expect(parseReceivedCents('5.00'), 500);
+    expect(
+      () => parseReceivedCents(''),
+      throwsA(
+        isA<ValidationError>().having(
+          (ValidationError error) => error.field,
+          'field',
+          'received',
+        ),
+      ),
+    );
+  });
 }

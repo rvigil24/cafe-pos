@@ -112,6 +112,7 @@ void main() {
         controller: controller,
         onClose: () => closed = true,
         onCancelled: () => closed = true,
+        onProceedToPayment: () {},
       ),
     );
     await tester.pumpAndSettle();
@@ -162,6 +163,7 @@ void main() {
         controller: OrderController(fixture.useCases, order.id),
         onClose: () {},
         onCancelled: () => cancelled = true,
+        onProceedToPayment: () {},
       ),
     );
     await tester.pumpAndSettle();
@@ -198,6 +200,7 @@ class _Fixture {
       products: products,
       tables: tables,
       orders: orders,
+      payments: payments,
       settings: settings,
     );
     useCases = OrderUseCases(
@@ -221,6 +224,7 @@ class _Fixture {
   final FakeProductRepository products = FakeProductRepository();
   final FakeTableRepository tables = FakeTableRepository();
   final FakeOrderRepository orders = FakeOrderRepository();
+  final FakePaymentRepository payments = FakePaymentRepository();
   final FakeSettingsRepository settings = FakeSettingsRepository();
   late final OrderUseCases useCases;
   late final TableUseCases tableUseCases;

@@ -3,6 +3,7 @@ import 'package:timezone/data/latest.dart' as tz;
 import '../application/services/id_generator.dart';
 import '../application/use_cases/catalog_use_cases.dart';
 import '../application/use_cases/order_use_cases.dart';
+import '../application/use_cases/payment_use_cases.dart';
 import '../application/use_cases/table_use_cases.dart';
 import '../infrastructure/database/app_database.dart';
 import '../infrastructure/database/sqlite_transaction_runner.dart';
@@ -16,11 +17,13 @@ class AppDependencies {
     required this.catalog,
     required this.tables,
     required this.orders,
+    required this.payments,
   });
 
   final CatalogUseCases catalog;
   final TableUseCases tables;
   final OrderUseCases orders;
+  final PaymentUseCases payments;
 }
 
 Future<AppDependencies> buildAppDependencies() async {
@@ -47,6 +50,12 @@ Future<AppDependencies> buildAppDependencies() async {
       orders: orders,
       categories: categories,
       products: products,
+      transactions: SqliteTransactionRunner(database),
+      ids: ids,
+      clock: DateTime.now,
+    ),
+    payments: PaymentUseCases(
+      orders: orders,
       transactions: SqliteTransactionRunner(database),
       ids: ids,
       clock: DateTime.now,

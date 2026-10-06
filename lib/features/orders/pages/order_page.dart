@@ -14,12 +14,14 @@ class OrderPage extends StatefulWidget {
     required this.controller,
     required this.onClose,
     required this.onCancelled,
+    required this.onProceedToPayment,
     super.key,
   });
 
   final OrderController controller;
   final VoidCallback onClose;
   final VoidCallback onCancelled;
+  final VoidCallback onProceedToPayment;
 
   @override
   State<OrderPage> createState() => _OrderPageState();
@@ -232,13 +234,29 @@ class _OrderPageState extends State<OrderPage> {
           color: Theme.of(context).colorScheme.surfaceContainerHigh,
           child: Padding(
             padding: const EdgeInsets.all(20),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                Text('Total', style: Theme.of(context).textTheme.titleLarge),
-                const Spacer(),
-                Text(
-                  formatPriceCents(details.order.totalCents),
-                  style: Theme.of(context).textTheme.headlineSmall,
+                Row(
+                  children: <Widget>[
+                    Text(
+                      'Total',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const Spacer(),
+                    Text(
+                      formatPriceCents(details.order.totalCents),
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                FilledButton.icon(
+                  onPressed: widget.controller.isSaving
+                      ? null
+                      : widget.onProceedToPayment,
+                  icon: const Icon(Icons.point_of_sale),
+                  label: const Text('Proceder al pago'),
                 ),
               ],
             ),
