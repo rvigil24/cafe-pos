@@ -38,7 +38,8 @@ class FakeCategoryRepository implements CategoryRepository {
   }
 
   @override
-  Future<List<Category>> listAll() async => List<Category>.of(values);
+  Future<List<Category>> listAll() async =>
+      List<Category>.of(values, growable: false);
 
   @override
   Future<int> nextSortOrder() async => values.length;

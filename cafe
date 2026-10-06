@@ -15,6 +15,7 @@ Commands:
   run        Build and launch Cafe POS on the connected device
   offline    Build and launch Cafe POS in airplane mode
   test       Run the complete validation suite on the connected device
+  seed       Add missing dummy tables, categories, and products on the device
   help       Show this help
 EOF
 }
@@ -37,6 +38,9 @@ case "${1:-help}" in
     ;;
   test)
     exec "${project_root}/scripts/test-all.sh"
+    ;;
+  seed)
+    exec "${project_root}/scripts/seed.sh"
     ;;
   help|-h|--help)
     show_help
