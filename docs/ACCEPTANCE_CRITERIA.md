@@ -35,6 +35,10 @@
 - An empty order cannot be paid; an order containing a zero-priced product can be paid with a zero total.
 - Change equals `received_cents - amount_cents`.
 - A transfer requires manual confirmation before persistence.
+- A credit-card payment requires manual confirmation before persistence and
+  stores no reference, card number, expiration date, security code, or other
+  additional card data.
+- Transfers may store an optional trimmed reference.
 - Every `PAID` order has exactly one payment, and an `OPEN` or `CANCELLED` order has none.
 - The persisted payment amount equals the order total at payment time.
 - Payment insertion and order status change either both commit or both roll back.

@@ -55,9 +55,12 @@ If a product already in the order becomes sold out or inactive, keep the line vi
 ### Payment
 
 - Prominent total.
-- Method selector: cash or transfer.
+- Method selector: cash, transfer, or credit card.
 - Cash: amount received, calculated change, and validation.
 - Transfer: optional reference and manual-verification confirmation.
+- Credit card: manual-verification confirmation only, without reference or any
+  other additional field. Never request or display card number, expiration
+  date, or security code.
 - Disable the confirmation action while the transaction is running.
 - On success, return to Home and free the table.
 

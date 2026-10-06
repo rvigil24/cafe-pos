@@ -28,3 +28,4 @@ flutter:
   uses-material-design: true
   assets:
     - database/001_initial_schema.sql
+    - database/002_add_credit_card_payment_method.sql

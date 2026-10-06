@@ -75,6 +75,12 @@ class AppDatabase {
           version: 1,
           sql: await rootBundle.loadString('database/001_initial_schema.sql'),
         ),
+        Migration(
+          version: 2,
+          sql: await rootBundle.loadString(
+            'database/002_add_credit_card_payment_method.sql',
+          ),
+        ),
       ];
     } on FlutterError catch (error) {
       throw PersistenceError('No se pudo cargar el esquema inicial: $error');

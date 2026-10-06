@@ -12,6 +12,7 @@ import 'package:cafe_pos/infrastructure/repositories/sqlite_category_repository.
 import 'package:cafe_pos/infrastructure/repositories/sqlite_product_repository.dart';
 import 'package:cafe_pos/infrastructure/repositories/sqlite_settings_repository.dart';
 import 'package:cafe_pos/infrastructure/repositories/sqlite_table_repository.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:path/path.dart' as path;
@@ -37,7 +38,7 @@ void main() {
     final AppDatabase provider = AppDatabase(databasePath: databasePath);
     final Database database = await provider.initialize();
 
-    expect(await _userVersion(database), 1);
+    expect(await _userVersion(database), 2);
     expect(
       Sqflite.firstIntValue(await database.rawQuery('PRAGMA foreign_keys')),
       1,
@@ -198,8 +199,81 @@ void main() {
       reopened,
     );
     expect(await reopenedProducts.listAll(), hasLength(2));
-    expect(await _userVersion(await reopened.database), 1);
+    expect(await _userVersion(await reopened.database), 2);
     await reopened.close();
+  });
+
+  testWidgets('migrates populated version 1 payments and accepts credit card', (
+    WidgetTester tester,
+  ) async {
+    final String versionOneSql = await rootBundle.loadString(
+      'database/001_initial_schema.sql',
+    );
+    final AppDatabase versionOne = AppDatabase(
+      databasePath: databasePath,
+      migrationLoader: () async => <Migration>[
+        Migration(version: 1, sql: versionOneSql),
+      ],
+    );
+    final Database oldDatabase = await versionOne.initialize();
+    final String now = DateTime.utc(2026, 10, 5, 18).toIso8601String();
+    await oldDatabase.insert('orders', <String, Object?>{
+      'id': 'existing-order',
+      'order_number': 1,
+      'type': 'TAKEAWAY',
+      'status': 'PAID',
+      'total_cents': 250,
+      'created_at': now,
+      'updated_at': now,
+      'paid_at': now,
+    });
+    await oldDatabase.insert('payments', <String, Object?>{
+      'id': 'existing-payment',
+      'order_id': 'existing-order',
+      'method': 'TRANSFER',
+      'amount_cents': 250,
+      'reference': 'existing-reference',
+      'created_at': now,
+    });
+    await versionOne.close();
+
+    final AppDatabase upgraded = AppDatabase(databasePath: databasePath);
+    final Database database = await upgraded.initialize();
+    expect(await _userVersion(database), 2);
+    expect(
+      (await database.query('payments')).single['reference'],
+      'existing-reference',
+    );
+    await database.insert('orders', <String, Object?>{
+      'id': 'card-order',
+      'order_number': 2,
+      'type': 'TAKEAWAY',
+      'status': 'PAID',
+      'total_cents': 300,
+      'created_at': now,
+      'updated_at': now,
+      'paid_at': now,
+    });
+    await expectLater(
+      database.insert('payments', <String, Object?>{
+        'id': 'invalid-card-payment',
+        'order_id': 'card-order',
+        'method': 'CREDIT_CARD',
+        'amount_cents': 300,
+        'reference': 'must-not-persist',
+        'created_at': now,
+      }),
+      throwsA(isA<DatabaseException>()),
+    );
+    await database.insert('payments', <String, Object?>{
+      'id': 'card-payment',
+      'order_id': 'card-order',
+      'method': 'CREDIT_CARD',
+      'amount_cents': 300,
+      'created_at': now,
+    });
+    expect(await database.query('payments'), hasLength(2));
+    await upgraded.close();
   });
 
   testWidgets('rolls back schema and user_version when a migration fails', (

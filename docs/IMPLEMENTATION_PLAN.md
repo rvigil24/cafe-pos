@@ -47,6 +47,8 @@ Output: the tablet operator can create and reopen a real order without paying it
 - Use the application transaction runner so payment insertion and order status update share one SQLite transaction.
 - Add cash payment, amount received, and change.
 - Add manually verified transfer with optional reference.
+- Add manually recorded credit card with confirmation only and no additional
+  field, card data capture, or processing.
 - Protect against duplicate payment in the UI and database.
 - Free the table and make the order read-only after payment.
 
