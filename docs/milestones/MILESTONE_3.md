@@ -5,7 +5,7 @@
 - State: `IN_PROGRESS`
 - Owner: Ruben Vigil
 - Branch: `milestone/3-complete-payment-flow`
-- Remote branch: Pending
+- Remote branch: `origin/milestone/3-complete-payment-flow`
 - Started: 2026-10-05
 - Completed:
 - Approval: Plan and the manual credit-card scope expansion approved by the
