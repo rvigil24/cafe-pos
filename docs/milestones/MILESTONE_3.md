@@ -2,14 +2,14 @@
 
 ## Status
 
-- State: `IN_PROGRESS`
+- State: `COMPLETE`
 - Owner: Ruben Vigil
 - Branch: `milestone/3-complete-payment-flow`
 - Remote branch: `origin/milestone/3-complete-payment-flow`
 - Started: 2026-10-05
-- Completed:
+- Completed: 2026-10-05
 - Approval: Plan and the manual credit-card scope expansion approved by the
-  owner on 2026-10-05.
+  owner on 2026-10-05. Milestone result accepted by the owner on 2026-10-05.
 
 ## Objective and output
 
@@ -134,14 +134,15 @@ order transition to `PAID`, free a dine-in table, and prevent duplicate payment.
 - `f1aa8fa feat(database): add manual credit card payment method`
 - `2751a51 feat(payments): add transactional payment persistence`
 - `a5a5c68 feat(payments): add tablet payment flow`
+- `946f2ad docs: record milestone 3 evidence`
+- `ad1882d docs: record milestone 3 review branch`
 
 ## Remaining limitations or blockers
 
-- No implementation blocker remains.
-- Owner review/acceptance, remote push, and fast-forward closure remain pending.
+- No blockers or deferred Milestone 3 requirements remain.
 
 ## Completion decision
 
-- [ ] All applicable completion gates in `docs/DEVELOPMENT_WORKFLOW.md` pass.
-- [ ] Owner accepted the milestone.
-- Final state: `IN_PROGRESS`
+- [x] All applicable completion gates in `docs/DEVELOPMENT_WORKFLOW.md` pass.
+- [x] Owner accepted the milestone on 2026-10-05.
+- Final state: `COMPLETE`
