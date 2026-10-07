@@ -5,7 +5,7 @@
 - State: `IN_PROGRESS`
 - Owner: Ruben Vigil
 - Branch: `milestone/4-history-reports`
-- Remote branch: Pending
+- Remote branch: `origin/milestone/4-history-reports`
 - Started: 2026-10-06
 - Completed:
 - Approval: Plan approved by the owner on 2026-10-06.
@@ -132,6 +132,7 @@ payment must appear with the correct sale date and values in both areas.
 - `e034fd8 feat(reports): add tablet sales and report screens`
 - `7b629aa test(reports): verify payments reach history and reports`
 - `a53900a fix(navigation): support short landscape viewports`
+- `801020b docs: record milestone 4 evidence`
 
 ## Remaining limitations or blockers
 
