@@ -99,6 +99,9 @@ payment must appear with the correct sale date and values in both areas.
 - Environment/device: Infinix X6873, Android 16/API 36, physical device.
 - Initial setup: Development seeder created 8 sanitized tables, 4 categories,
   and 12 products without replacing existing matching records.
+- Cleanup/restoration: The production debug APK was restored and left open.
+  Sanitized order #1 and the seeded catalog remain on the device for owner
+  review; no reset was performed.
 
 | Step | Action | Expected result | Actual result |
 | --- | --- | --- | --- |
