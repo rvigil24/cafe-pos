@@ -16,6 +16,7 @@ Commands:
   offline    Build and launch Cafe POS in airplane mode
   test       Run the complete validation suite on the connected device
   seed       Add missing dummy tables, categories, and products on the device
+  reset      Erase all local Cafe POS data on the connected device
   help       Show this help
 EOF
 }
@@ -41,6 +42,9 @@ case "${1:-help}" in
     ;;
   seed)
     exec "${project_root}/scripts/seed.sh"
+    ;;
+  reset)
+    exec "${project_root}/scripts/reset.sh" "${@:2}"
     ;;
   help|-h|--help)
     show_help

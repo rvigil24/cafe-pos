@@ -54,6 +54,7 @@ Use the single project command from the repository root:
 ./cafe check      # Format, analysis, and fast tests without a phone
 ./cafe test       # Run the complete validation suite
 ./cafe seed       # Add missing dummy tables, categories, and products
+./cafe reset      # Erase all local Cafe POS data after explicit confirmation
 ./cafe offline    # Build and launch after enabling airplane mode
 ./cafe devices    # Show detected Android and Flutter devices
 ```
@@ -63,6 +64,12 @@ application data and creates missing development records without deleting or
 overwriting matching names. Repeating it is safe: once all seed records exist,
 it creates nothing. The command restores the normal debug APK afterward; run
 `./cafe run` to open the seeded application.
+
+`./cafe reset` is destructive and runs only on the selected Android device. It
+requires typing `RESET`, then installs the normal debug APK, erases all private
+Cafe POS data, and opens the app with a fresh local database. Exported backup
+files outside the app are not deleted. For intentional non-interactive use, run
+`./cafe reset --yes`.
 
 For Wi-Fi setup, enable `Developer options > Wireless debugging` on an Android 11 or newer phone and run `./cafe pair`. The command asks for the pairing address and six-digit code shown by Android, then discovers or requests the connection address and verifies Flutter connectivity. Pairing normally needs to be completed only once.
 
