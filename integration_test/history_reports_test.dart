@@ -1,8 +1,12 @@
 import 'dart:io';
 
+import 'package:cafe_pos/application/services/id_generator.dart';
+import 'package:cafe_pos/application/use_cases/payment_use_cases.dart';
 import 'package:cafe_pos/domain/entities/payment.dart';
 import 'package:cafe_pos/domain/entities/utc_date_range.dart';
 import 'package:cafe_pos/infrastructure/database/app_database.dart';
+import 'package:cafe_pos/infrastructure/database/sqlite_transaction_runner.dart';
+import 'package:cafe_pos/infrastructure/repositories/sqlite_order_repository.dart';
 import 'package:cafe_pos/infrastructure/repositories/sqlite_report_repository.dart';
 import 'package:cafe_pos/infrastructure/repositories/sqlite_sales_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -87,6 +91,51 @@ void main() {
         (PaymentMethod.cash, 1000),
         (PaymentMethod.transfer, 500),
       ],
+    );
+
+    final DateTime newPaidAt = DateTime.utc(2026, 10, 6, 22);
+    await database.insert('orders', <String, Object?>{
+      'id': 'new-order',
+      'order_number': 6,
+      'type': 'TAKEAWAY',
+      'status': 'OPEN',
+      'total_cents': 250,
+      'created_at': newPaidAt.toIso8601String(),
+      'updated_at': newPaidAt.toIso8601String(),
+    });
+    await _insertItem(
+      database,
+      id: 'new-item',
+      orderId: 'new-order',
+      product: 'Té',
+      category: 'Bebidas históricas',
+      quantity: 1,
+      price: 250,
+    );
+    final PaymentUseCases payments = PaymentUseCases(
+      orders: SqliteOrderRepository(provider),
+      transactions: SqliteTransactionRunner(provider),
+      ids: const UuidIdGenerator(),
+      clock: () => newPaidAt,
+    );
+    await payments.pay(
+      orderId: 'new-order',
+      method: PaymentMethod.creditCard,
+      manualConfirmed: true,
+    );
+
+    final newSale = (await sales.list(orderNumber: 6)).single;
+    expect(newSale.paidAt, newPaidAt);
+    expect(newSale.paymentMethod, PaymentMethod.creditCard);
+    final refreshedReport = await reports.load(octoberSix);
+    expect(refreshedReport.netSalesCents, 1750);
+    expect(refreshedReport.paidOrderCount, 3);
+    expect(refreshedReport.unitsSold, 7);
+    expect(
+      refreshedReport.totalsByPaymentMethod
+          .singleWhere((value) => value.method == PaymentMethod.creditCard)
+          .totalCents,
+      250,
     );
 
     await provider.close();
