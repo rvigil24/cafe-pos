@@ -2,13 +2,14 @@
 
 ## Status
 
-- State: `IN_PROGRESS`
+- State: `COMPLETE`
 - Owner: Ruben Vigil
 - Branch: `milestone/4-history-reports`
 - Remote branch: `origin/milestone/4-history-reports`
 - Started: 2026-10-06
-- Completed:
-- Approval: Plan approved by the owner on 2026-10-06.
+- Completed: 2026-10-06
+- Approval: Plan approved by the owner on 2026-10-06. Milestone result
+  accepted by the owner on 2026-10-06.
 
 ## Objective and output
 
@@ -136,14 +137,15 @@ payment must appear with the correct sale date and values in both areas.
 - `7b629aa test(reports): verify payments reach history and reports`
 - `a53900a fix(navigation): support short landscape viewports`
 - `801020b docs: record milestone 4 evidence`
+- `8485923 docs: record milestone 4 review branch`
+- `31a61c2 docs: record milestone 4 device cleanup state`
 
 ## Remaining limitations or blockers
 
-- No implementation blocker remains. Owner review and milestone acceptance are
-  still required before closure and integration into `main`.
+- No blockers or deferred Milestone 4 requirements remain.
 
 ## Completion decision
 
-- [ ] All applicable completion gates in `docs/DEVELOPMENT_WORKFLOW.md` pass.
-- [ ] Owner accepted the milestone.
-- Final state: `IN_PROGRESS`
+- [x] All applicable completion gates in `docs/DEVELOPMENT_WORKFLOW.md` pass.
+- [x] Owner accepted the milestone on 2026-10-06.
+- Final state: `COMPLETE`
