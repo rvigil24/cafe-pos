@@ -7,6 +7,15 @@ String formatCafeTime(DateTime value) {
   return DateFormat('h:mm a').format(tz.TZDateTime.from(value, _cafeLocation));
 }
 
+String formatCafeDate(DateTime value) {
+  return DateFormat('dd/MM/yyyy').format(value);
+}
+
+String formatCafeDateTime(DateTime value) {
+  return DateFormat('dd/MM/yyyy h:mm a')
+      .format(tz.TZDateTime.from(value, _cafeLocation));
+}
+
 String formatOpenDuration(DateTime createdAt, DateTime now) {
   final Duration elapsed = now.toUtc().difference(createdAt.toUtc());
   if (elapsed.inMinutes < 1) {

@@ -8,6 +8,10 @@ import '../features/payments/controllers/payment_controller.dart';
 import '../features/payments/pages/payment_page.dart';
 import '../features/products/controllers/catalog_controller.dart';
 import '../features/products/pages/catalog_page.dart';
+import '../features/reports/controllers/reports_controller.dart';
+import '../features/reports/pages/reports_page.dart';
+import '../features/sales/controllers/sales_controller.dart';
+import '../features/sales/pages/sales_page.dart';
 import '../features/tables/controllers/table_controller.dart';
 import '../features/tables/pages/table_settings_page.dart';
 import 'dependencies.dart';
@@ -102,6 +106,12 @@ class _CafeShellState extends State<CafeShell> {
   late final TableController _tables = TableController(
     widget.dependencies.tables,
   );
+  late final SalesController _sales = SalesController(
+    widget.dependencies.sales,
+  );
+  late final ReportsController _reports = ReportsController(
+    widget.dependencies.reports,
+  );
   int _section = 0;
   OrderController? _order;
   PaymentController? _payment;
@@ -111,6 +121,8 @@ class _CafeShellState extends State<CafeShell> {
     _home.dispose();
     _catalog.dispose();
     _tables.dispose();
+    _sales.dispose();
+    _reports.dispose();
     _order?.dispose();
     _payment?.dispose();
     super.dispose();
@@ -136,6 +148,16 @@ class _CafeShellState extends State<CafeShell> {
                 icon: Icon(Icons.add_shopping_cart_outlined),
                 selectedIcon: Icon(Icons.add_shopping_cart),
                 label: Text('Nueva orden'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.receipt_long_outlined),
+                selectedIcon: Icon(Icons.receipt_long),
+                label: Text('Ventas'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.bar_chart_outlined),
+                selectedIcon: Icon(Icons.bar_chart),
+                label: Text('Reportes'),
               ),
               NavigationRailDestination(
                 icon: Icon(Icons.inventory_2_outlined),
@@ -183,7 +205,9 @@ class _CafeShellState extends State<CafeShell> {
         onOpenOrder: _openOrder,
         creationOnly: true,
       ),
-      2 => CatalogPage(controller: _catalog),
+      2 => SalesPage(controller: _sales),
+      3 => ReportsPage(controller: _reports),
+      4 => CatalogPage(controller: _catalog),
       _ => TableSettingsPage(controller: _tables),
     };
   }

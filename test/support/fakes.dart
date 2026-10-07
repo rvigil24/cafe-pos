@@ -8,11 +8,16 @@ import 'package:cafe_pos/domain/entities/order_details.dart';
 import 'package:cafe_pos/domain/entities/order_item.dart';
 import 'package:cafe_pos/domain/entities/payment.dart';
 import 'package:cafe_pos/domain/entities/product.dart';
+import 'package:cafe_pos/domain/entities/sale.dart';
+import 'package:cafe_pos/domain/entities/sales_report.dart';
+import 'package:cafe_pos/domain/entities/utc_date_range.dart';
 import 'package:cafe_pos/domain/errors/domain_error.dart';
 import 'package:cafe_pos/domain/repositories/category_repository.dart';
 import 'package:cafe_pos/domain/repositories/order_repository.dart';
 import 'package:cafe_pos/domain/repositories/payment_repository.dart';
 import 'package:cafe_pos/domain/repositories/product_repository.dart';
+import 'package:cafe_pos/domain/repositories/report_repository.dart';
+import 'package:cafe_pos/domain/repositories/sales_repository.dart';
 import 'package:cafe_pos/domain/repositories/settings_repository.dart';
 import 'package:cafe_pos/domain/repositories/table_repository.dart';
 
@@ -308,6 +313,65 @@ class FakePaymentRepository implements PaymentRepository {
     return values
         .where((Payment value) => value.orderId == orderId)
         .firstOrNull;
+  }
+}
+
+class FakeSalesRepository implements SalesRepository {
+  final List<SaleSummary> values = <SaleSummary>[];
+  final Map<String, SaleDetails> details = <String, SaleDetails>{};
+  Object? error;
+
+  @override
+  Future<SaleDetails?> findDetails(String orderId) async {
+    final Object? currentError = error;
+    if (currentError != null) {
+      throw currentError;
+    }
+    return details[orderId];
+  }
+
+  @override
+  Future<List<SaleSummary>> list({
+    int? orderNumber,
+    UtcDateRange? paidRange,
+    PaymentMethod? paymentMethod,
+  }) async {
+    final Object? currentError = error;
+    if (currentError != null) {
+      throw currentError;
+    }
+    return values
+        .where(
+          (SaleSummary sale) =>
+              (orderNumber == null || sale.orderNumber == orderNumber) &&
+              (paidRange == null ||
+                  (!sale.paidAt.isBefore(paidRange.start) &&
+                      sale.paidAt.isBefore(paidRange.end))) &&
+              (paymentMethod == null || sale.paymentMethod == paymentMethod),
+        )
+        .toList(growable: false);
+  }
+}
+
+class FakeReportRepository implements ReportRepository {
+  SalesReport value = const SalesReport(
+    netSalesCents: 0,
+    paidOrderCount: 0,
+    unitsSold: 0,
+    bestSellingProducts: <ProductUnits>[],
+    salesByCategory: <NamedSalesTotal>[],
+    salesByHour: <HourlySalesTotal>[],
+    totalsByPaymentMethod: <PaymentMethodTotal>[],
+  );
+  Object? error;
+
+  @override
+  Future<SalesReport> load(UtcDateRange paidRange) async {
+    final Object? currentError = error;
+    if (currentError != null) {
+      throw currentError;
+    }
+    return value;
   }
 }
 

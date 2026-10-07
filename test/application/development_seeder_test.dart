@@ -1,10 +1,14 @@
 import 'package:cafe_pos/app/dependencies.dart';
+import 'package:cafe_pos/application/services/cafe_calendar.dart';
 import 'package:cafe_pos/application/services/transaction_runner.dart';
 import 'package:cafe_pos/application/use_cases/catalog_use_cases.dart';
 import 'package:cafe_pos/application/use_cases/order_use_cases.dart';
 import 'package:cafe_pos/application/use_cases/payment_use_cases.dart';
+import 'package:cafe_pos/application/use_cases/report_use_cases.dart';
+import 'package:cafe_pos/application/use_cases/sales_use_cases.dart';
 import 'package:cafe_pos/application/use_cases/table_use_cases.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:timezone/timezone.dart' as tz;
 
 import '../../tool/development_seeder.dart';
 import '../support/fakes.dart';
@@ -88,6 +92,12 @@ class _Fixture {
         ids: ids,
         clock: () => now,
       ),
+      sales: SalesUseCases(sales: sales, calendar: CafeCalendar(tz.UTC)),
+      reports: ReportUseCases(
+        reports: reports,
+        calendar: CafeCalendar(tz.UTC),
+        clock: () => now,
+      ),
     );
   }
 
@@ -98,6 +108,8 @@ class _Fixture {
   final FakeTableRepository tables = FakeTableRepository();
   final FakeOrderRepository orders = FakeOrderRepository();
   final FakePaymentRepository payments = FakePaymentRepository();
+  final FakeSalesRepository sales = FakeSalesRepository();
+  final FakeReportRepository reports = FakeReportRepository();
   final FakeSettingsRepository settings = FakeSettingsRepository();
   late final AppDependencies dependencies;
 }
