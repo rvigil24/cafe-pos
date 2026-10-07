@@ -137,6 +137,7 @@ class _CafeShellState extends State<CafeShell> {
           NavigationRail(
             selectedIndex: _section,
             labelType: NavigationRailLabelType.all,
+            scrollable: true,
             onDestinationSelected: _selectSection,
             destinations: const <NavigationRailDestination>[
               NavigationRailDestination(

@@ -44,6 +44,20 @@ void main() {
     expect(find.widgetWithText(AppBar, 'Reportes'), findsOneWidget);
     expect(find.text('No hay ventas pagadas en este período.'), findsOneWidget);
   });
+
+  testWidgets('navigation rail does not overflow a short landscape viewport', (
+    WidgetTester tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(800, 360));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(CafePosApp(dependencies: _dependencies()));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Inicio'), findsWidgets);
+    expect(find.text('Reportes'), findsOneWidget);
+  });
 }
 
 AppDependencies _dependencies() {
