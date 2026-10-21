@@ -5,7 +5,7 @@
 - State: `IN_PROGRESS`
 - Owner: Ruben Vigil
 - Branch: `milestone/5-backup-restore-hardening`
-- Remote branch: `origin/milestone/5-backup-restore-hardening` (push pending)
+- Remote branch: `origin/milestone/5-backup-restore-hardening`
 - Started: 2026-10-20
 - Completed:
 - Approval: Plan approved by the owner on 2026-10-20.
@@ -119,6 +119,7 @@ preventive backup, and verifies that history and reports still match.
 - `3f5c223` — `feat(backup): add failure-safe SQLite restore`
 - `fe2d847` — `feat(settings): add business and backup controls`
 - `578b2bc` — `docs: add MVP recovery and release artifacts`
+- `8836722` — `docs: record milestone 5 verification`
 
 ## Remaining limitations or blockers
 
