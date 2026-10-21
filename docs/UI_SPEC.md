@@ -10,6 +10,14 @@
 - Confirm destructive actions explicitly.
 - Use Flutter Material 3 components consistently.
 
+### Visual language
+
+- Use warm ivory surfaces, an espresso navigation surface, terracotta for primary actions, sage for positive states, amber for warnings, and red only for destructive or error states.
+- Prefer clear hierarchy and grouped surfaces over repeated default cards.
+- Use low elevation, soft 16–20 dp corners, consistent 8 dp spacing increments, and system typography with deliberate size and weight hierarchy.
+- Keep the primary action and the information required to decide it visible together.
+- Communicate every operational state with text and iconography in addition to color.
+
 ## 2. Main navigation
 
 Sections:
@@ -21,7 +29,9 @@ Sections:
 5. Products
 6. Settings
 
-Use a persistent `NavigationRail` or an equivalent tablet-friendly navigation pattern. Keep the current order visible while editing it.
+Use a compact persistent navigation rail with a dark espresso surface and a clearly highlighted selected destination. Keep the current order visible while editing it.
+
+Every primary screen uses one shared page shell with a title, optional context, actions, content, and progress state. Avoid nested scaffolds and duplicate app bars.
 
 ## 3. Screens
 
@@ -31,6 +41,8 @@ Use a persistent `NavigationRail` or an equivalent tablet-friendly navigation pa
 - Open takeaway orders in a separate section.
 - Each order shows number, time, current total, and time open.
 - Actions: open order and create order.
+- Summarize free and occupied tables before the grid.
+- Make table state scannable through label, icon, and restrained semantic color.
 
 ### New order / Edit order
 
@@ -38,6 +50,8 @@ Use two main areas:
 
 - Left: categories and a grid of available products.
 - Right: current order lines, quantities, notes, and total.
+
+Keep the order summary, total, and payment action anchored while the product catalog scrolls independently.
 
 Actions:
 

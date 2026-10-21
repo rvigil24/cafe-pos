@@ -77,6 +77,17 @@ Output: a new payment appears correctly in history and reports.
 
 Output: the MVP is installable and recoverable after device failure.
 
+## Milestone 6 — Integral UI redesign
+
+- Introduce a warm, modern cafe design system without changing product behavior.
+- Replace default Material presentation with a consistent tablet shell and shared components.
+- Redesign Home and Order first and validate the prototype on the physical target.
+- Apply the approved language to Payment, Sales, Reports, Products, and Settings.
+- Preserve touch accessibility, semantic labels, and all existing business flows.
+- Verify the production-entry APK across full and short landscape viewports.
+
+Output: the complete MVP is visually cohesive, immediately understandable, and efficient to operate on the cafe tablet.
+
 ## Workflow
 
 `docs/DEVELOPMENT_WORKFLOW.md` is the single authoritative process for planning, approval, implementation, testing, review, evidence, commits, and completion. Create each milestone record from `docs/milestones/TEMPLATE.md` when implementation begins.
