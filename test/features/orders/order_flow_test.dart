@@ -1,3 +1,4 @@
+import 'package:cafe_pos/app/theme.dart';
 import 'package:cafe_pos/application/services/transaction_runner.dart';
 import 'package:cafe_pos/application/use_cases/order_use_cases.dart';
 import 'package:cafe_pos/application/use_cases/table_use_cases.dart';
@@ -24,6 +25,7 @@ void main() {
   testWidgets('Home distinguishes free tables and opens a created order', (
     WidgetTester tester,
   ) async {
+    final SemanticsHandle semantics = tester.ensureSemantics();
     final _Fixture fixture = _Fixture();
     String? openedOrderId;
     await _pumpLandscape(
@@ -36,12 +38,16 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Libre'), findsOneWidget);
+    expect(find.bySemanticsLabel('Mesa 1, libre'), findsOneWidget);
     expect(find.text('No hay órdenes para llevar'), findsOneWidget);
     await tester.tap(find.text('Mesa 1'));
     await tester.pumpAndSettle();
 
     expect(openedOrderId, isNotNull);
     expect(fixture.orders.orders.single.tableId, fixture.table.id);
+    expect(find.text('Ocupada'), findsOneWidget);
+    expect(find.bySemanticsLabel('Mesa 1, ocupada'), findsOneWidget);
+    semantics.dispose();
   });
 
   testWidgets('table settings confirms deactivation and explains rejection', (
@@ -180,14 +186,72 @@ void main() {
     expect(cancelled, isTrue);
     expect(fixture.orders.orders.single.status, OrderStatus.cancelled);
   });
+
+  testWidgets('order keeps total and payment action visible at 800x360', (
+    WidgetTester tester,
+  ) async {
+    final _Fixture fixture = _Fixture();
+    final Order order = await fixture.useCases.createTakeaway();
+    bool proceededToPayment = false;
+    await _pumpLandscape(
+      tester,
+      OrderPage(
+        controller: OrderController(fixture.useCases, order.id),
+        onClose: () {},
+        onCancelled: () {},
+        onProceedToPayment: () => proceededToPayment = true,
+      ),
+      size: const Size(800, 360),
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    final Finder paymentAction = find.widgetWithText(
+      FilledButton,
+      'Proceder al pago',
+    );
+    expect(paymentAction, findsOneWidget);
+    final Rect actionBounds = tester.getRect(paymentAction);
+    expect(actionBounds.top, greaterThanOrEqualTo(0));
+    expect(actionBounds.bottom, lessThanOrEqualTo(360));
+
+    await tester.tap(paymentAction);
+    expect(proceededToPayment, isTrue);
+  });
+
+  testWidgets('empty order adapts to the Infinix logical landscape height', (
+    WidgetTester tester,
+  ) async {
+    final _Fixture fixture = _Fixture();
+    final Order order = await fixture.useCases.createTakeaway();
+    await _pumpLandscape(
+      tester,
+      OrderPage(
+        controller: OrderController(fixture.useCases, order.id),
+        onClose: () {},
+        onCancelled: () {},
+        onProceedToPayment: () {},
+      ),
+      size: const Size(803, 408),
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Orden vacía · toca un producto'), findsOneWidget);
+    expect(find.text('Proceder al pago'), findsOneWidget);
+  });
 }
 
-Future<void> _pumpLandscape(WidgetTester tester, Widget child) async {
-  tester.view.physicalSize = const Size(1280, 800);
+Future<void> _pumpLandscape(
+  WidgetTester tester,
+  Widget child, {
+  Size size = const Size(1280, 800),
+}) async {
+  tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
-  await tester.pumpWidget(MaterialApp(home: child));
+  await tester.pumpWidget(MaterialApp(theme: buildCafeTheme(), home: child));
 }
 
 class _Fixture {

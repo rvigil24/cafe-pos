@@ -33,7 +33,12 @@ void main() {
     expect(find.text('Ventas'), findsOneWidget);
     expect(find.text('Reportes'), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.receipt_long_outlined));
+    await tester.tap(
+      find.descendant(
+        of: find.byType(NavigationRail),
+        matching: find.byIcon(Icons.receipt_long_outlined),
+      ),
+    );
     await tester.pumpAndSettle();
     expect(find.widgetWithText(AppBar, 'Ventas'), findsOneWidget);
     expect(
@@ -41,7 +46,12 @@ void main() {
       findsOneWidget,
     );
 
-    await tester.tap(find.byIcon(Icons.bar_chart_outlined));
+    await tester.tap(
+      find.descendant(
+        of: find.byType(NavigationRail),
+        matching: find.byIcon(Icons.bar_chart_outlined),
+      ),
+    );
     await tester.pumpAndSettle();
     expect(find.widgetWithText(AppBar, 'Reportes'), findsOneWidget);
     expect(find.text('No hay ventas pagadas en este período.'), findsOneWidget);

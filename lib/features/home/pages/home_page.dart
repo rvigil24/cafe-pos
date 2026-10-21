@@ -5,6 +5,8 @@ import '../../../domain/entities/cafe_table.dart';
 import '../../../domain/entities/order.dart';
 import '../../../shared/dates/cafe_dates.dart';
 import '../../../shared/money/money_parser.dart';
+import '../../../shared/presentation/cafe_colors.dart';
+import '../../../shared/presentation/pos_page.dart';
 import '../controllers/home_controller.dart';
 
 class HomePage extends StatefulWidget {
@@ -35,20 +37,19 @@ class _HomePageState extends State<HomePage> {
     return AnimatedBuilder(
       animation: widget.controller,
       builder: (BuildContext context, Widget? child) {
-        return Scaffold(
-          appBar: AppBar(
-            title: Text(widget.creationOnly ? 'Nueva orden' : 'Inicio'),
-            actions: <Widget>[
-              if (widget.controller.isSaving)
-                const Padding(
-                  padding: EdgeInsets.all(16),
-                  child: SizedBox.square(
-                    dimension: 24,
-                    child: CircularProgressIndicator(strokeWidth: 3),
-                  ),
-                ),
-            ],
-          ),
+        return PosPage(
+          title: widget.creationOnly ? 'Nueva orden' : 'Inicio',
+          subtitle: widget.creationOnly
+              ? 'Elige una mesa libre o crea una orden para llevar'
+              : 'Estado actual del salón y órdenes abiertas',
+          isWorking: widget.controller.isSaving,
+          actions: <Widget>[
+            FilledButton.icon(
+              onPressed: widget.controller.isSaving ? null : _createTakeaway,
+              icon: const Icon(Icons.shopping_bag_outlined),
+              label: const Text('Nueva para llevar'),
+            ),
+          ],
           body: _body(),
         );
       },
@@ -78,28 +79,29 @@ class _HomePageState extends State<HomePage> {
     return RefreshIndicator(
       onRefresh: widget.controller.load,
       child: ListView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
         children: <Widget>[
           if (widget.controller.errorMessage != null) ...<Widget>[
             _ErrorBanner(message: widget.controller.errorMessage!),
             const SizedBox(height: 16),
           ],
-          Row(
-            children: <Widget>[
-              Expanded(
-                child: Text(
-                  widget.creationOnly ? 'Selecciona una mesa' : 'Mesas',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-              ),
-              FilledButton.icon(
-                onPressed: widget.controller.isSaving ? null : _createTakeaway,
-                icon: const Icon(Icons.shopping_bag_outlined),
-                label: const Text('Nueva para llevar'),
-              ),
-            ],
+          if (!widget.creationOnly) ...<Widget>[
+            _summary(data),
+            const SizedBox(height: 22),
+          ],
+          Text(
+            widget.creationOnly ? 'Selecciona una mesa' : 'Mesas',
+            style: Theme.of(context).textTheme.headlineSmall,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 4),
+          Text(
+            widget.creationOnly
+                ? 'Solo se muestran mesas disponibles.'
+                : 'Toca una mesa para abrir o continuar su orden.',
+            style: Theme.of(context).textTheme.bodyMedium
+                ?.copyWith(color: CafeColors.muted),
+          ),
+          const SizedBox(height: 14),
           if (visibleTables.isEmpty)
             const _EmptyState(
               title: 'No hay mesas disponibles',
@@ -111,9 +113,9 @@ class _HomePageState extends State<HomePage> {
               physics: const NeverScrollableScrollPhysics(),
               gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                 maxCrossAxisExtent: 260,
-                mainAxisExtent: 150,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
+                mainAxisExtent: 164,
+                crossAxisSpacing: 14,
+                mainAxisSpacing: 14,
               ),
               itemCount: visibleTables.length,
               itemBuilder: (BuildContext context, int index) {
@@ -130,7 +132,7 @@ class _HomePageState extends State<HomePage> {
               },
             ),
           if (!widget.creationOnly) ...<Widget>[
-            const SizedBox(height: 28),
+            const SizedBox(height: 30),
             Text(
               'Órdenes para llevar abiertas',
               style: Theme.of(context).textTheme.headlineSmall,
@@ -142,20 +144,80 @@ class _HomePageState extends State<HomePage> {
                 message: 'Las órdenes abiertas aparecerán aquí.',
               )
             else
-              ...data.takeawayOrders.map(
-                (Order order) => Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.shopping_bag_outlined),
-                    title: Text('Orden #${order.orderNumber}'),
-                    subtitle: Text(_orderSubtitle(order)),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => widget.onOpenOrder(order.id),
+              ...data.takeawayOrders.map((Order order) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: PosSurface(
+                    padding: EdgeInsets.zero,
+                    child: ListTile(
+                      minTileHeight: 74,
+                      leading: const CircleAvatar(
+                        backgroundColor: CafeColors.amberSoft,
+                        foregroundColor: CafeColors.amber,
+                        child: Icon(Icons.shopping_bag_outlined),
+                      ),
+                      title: Text('Orden #${order.orderNumber}'),
+                      subtitle: Text(_orderSubtitle(order)),
+                      trailing: const Icon(Icons.chevron_right_rounded),
+                      onTap: () => widget.onOpenOrder(order.id),
+                    ),
                   ),
-                ),
-              ),
+                );
+              }),
           ],
         ],
       ),
+    );
+  }
+
+  Widget _summary(HomeData data) {
+    final int occupied = data.tables
+        .where((CafeTable table) => data.orderForTable(table.id) != null)
+        .length;
+    final List<Widget> metrics = <Widget>[
+      _SummaryMetric(
+        label: 'Mesas libres',
+        value: '${data.tables.length - occupied}',
+        icon: Icons.table_restaurant_outlined,
+        foreground: CafeColors.sage,
+        background: CafeColors.sageSoft,
+      ),
+      _SummaryMetric(
+        label: 'Mesas ocupadas',
+        value: '$occupied',
+        icon: Icons.receipt_long_outlined,
+        foreground: CafeColors.terracotta,
+        background: CafeColors.terracottaSoft,
+      ),
+      _SummaryMetric(
+        label: 'Para llevar',
+        value: '${data.takeawayOrders.length}',
+        icon: Icons.shopping_bag_outlined,
+        foreground: CafeColors.amber,
+        background: CafeColors.amberSoft,
+      ),
+    ];
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        if (constraints.maxWidth < 560) {
+          return Column(
+            children: <Widget>[
+              for (int index = 0; index < metrics.length; index++) ...<Widget>[
+                metrics[index],
+                if (index < metrics.length - 1) const SizedBox(height: 10),
+              ],
+            ],
+          );
+        }
+        return Row(
+          children: <Widget>[
+            for (int index = 0; index < metrics.length; index++) ...<Widget>[
+              Expanded(child: metrics[index]),
+              if (index < metrics.length - 1) const SizedBox(width: 12),
+            ],
+          ],
+        );
+      },
     );
   }
 
@@ -196,22 +258,45 @@ class _TableCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool occupied = order != null;
+    final Color accent = occupied ? CafeColors.terracotta : CafeColors.sage;
+    final Color soft = occupied
+        ? CafeColors.terracottaSoft
+        : CafeColors.sageSoft;
     return Semantics(
       button: true,
+      excludeSemantics: true,
       label: '${table.name}, ${occupied ? 'ocupada' : 'libre'}',
-      child: Card(
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: occupied ? accent : CafeColors.outlineSoft),
+        ),
         child: InkWell(
           onTap: enabled ? onPressed : null,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(18),
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(18),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Row(
                   children: <Widget>[
-                    Icon(occupied ? Icons.receipt_long : Icons.table_bar),
-                    const SizedBox(width: 8),
+                    Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        color: soft,
+                        borderRadius: BorderRadius.circular(13),
+                      ),
+                      child: Icon(
+                        occupied
+                            ? Icons.receipt_long_rounded
+                            : Icons.table_restaurant_rounded,
+                        color: accent,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         table.name,
@@ -221,16 +306,77 @@ class _TableCard extends StatelessWidget {
                   ],
                 ),
                 const Spacer(),
-                Text(occupied ? 'Ocupada' : 'Libre'),
+                PosStatusPill(
+                  label: occupied ? 'Ocupada' : 'Libre',
+                  icon: occupied ? Icons.schedule : Icons.check_circle_outline,
+                  foreground: accent,
+                  background: soft,
+                ),
                 if (order case final Order value)
-                  Text(
-                    'Orden #${value.orderNumber} · '
-                    '${formatPriceCents(value.totalCents)}',
+                  Padding(
+                    padding: const EdgeInsets.only(top: 7),
+                    child: Text(
+                      'Orden #${value.orderNumber} · '
+                      '${formatPriceCents(value.totalCents)}',
+                      style: Theme.of(context).textTheme.bodyMedium
+                          ?.copyWith(fontWeight: FontWeight.w700),
+                    ),
                   ),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _SummaryMetric extends StatelessWidget {
+  const _SummaryMetric({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.foreground,
+    required this.background,
+  });
+
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color foreground;
+  final Color background;
+
+  @override
+  Widget build(BuildContext context) {
+    return PosSurface(
+      child: Row(
+        children: <Widget>[
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: background,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(icon, color: foreground),
+          ),
+          const SizedBox(width: 13),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(value, style: Theme.of(context).textTheme.headlineSmall),
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodyMedium
+                      ?.copyWith(color: CafeColors.muted),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
