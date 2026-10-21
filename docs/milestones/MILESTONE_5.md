@@ -2,13 +2,13 @@
 
 ## Status
 
-- State: `IN_PROGRESS`
+- State: `COMPLETE`
 - Owner: Ruben Vigil
 - Branch: `milestone/5-backup-restore-hardening`
 - Remote branch: `origin/milestone/5-backup-restore-hardening`
 - Started: 2026-10-20
-- Completed:
-- Approval: Plan approved by the owner on 2026-10-20; connectivity-toggle verification removed from scope by explicit owner direction on the same date.
+- Completed: 2026-10-20
+- Approval: Plan approved by the owner on 2026-10-20; connectivity-toggle verification removed from scope by explicit owner direction on the same date; final milestone accepted by the owner on 2026-10-20.
 
 ## Objective and output
 
@@ -122,13 +122,14 @@ preventive backup, and verifies that history and reports still match.
 - `8836722` — `docs: record milestone 5 verification`
 - `3cd533c` — `docs: record milestone branch publication`
 - `0fa0dbe` — `chore(scope): remove connectivity toggle verification`
+- `fde95ec` — `docs: prepare milestone 5 for acceptance`
 
 ## Remaining limitations or blockers
 
-- Owner acceptance has not yet been requested or recorded.
+- None.
 
 ## Completion decision
 
 - [x] All applicable completion gates in `docs/DEVELOPMENT_WORKFLOW.md` pass.
-- [ ] Owner accepted the milestone.
-- Final state: `IN_PROGRESS`
+- [x] Owner accepted the milestone.
+- Final state: `COMPLETE`
