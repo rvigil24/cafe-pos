@@ -98,3 +98,10 @@ The Android Gradle process is limited to a 1 GB heap and one worker so local bui
 ```bash
 flutter run --no-build --use-application-binary=build/app/outputs/flutter-apk/app-debug.apk
 ```
+
+## Backup, upgrade, and release operation
+
+- [Manual tablet checklist](docs/MANUAL_TABLET_TEST_CHECKLIST.md)
+- [MVP release notes](docs/RELEASE_NOTES_MVP.md)
+- [Upgrade and recovery procedure](docs/UPGRADE_PROCEDURE.md)
+- [Sanitized example backup](docs/examples/README.md)
