@@ -1,6 +1,7 @@
 import 'package:cafe_pos/application/services/id_generator.dart';
 import 'package:cafe_pos/application/services/transaction_runner.dart';
 import 'package:cafe_pos/domain/entities/app_settings.dart';
+import 'package:cafe_pos/domain/entities/backup_result.dart';
 import 'package:cafe_pos/domain/entities/cafe_table.dart';
 import 'package:cafe_pos/domain/entities/category.dart';
 import 'package:cafe_pos/domain/entities/order.dart';
@@ -12,6 +13,7 @@ import 'package:cafe_pos/domain/entities/sale.dart';
 import 'package:cafe_pos/domain/entities/sales_report.dart';
 import 'package:cafe_pos/domain/entities/utc_date_range.dart';
 import 'package:cafe_pos/domain/errors/domain_error.dart';
+import 'package:cafe_pos/domain/repositories/backup_repository.dart';
 import 'package:cafe_pos/domain/repositories/category_repository.dart';
 import 'package:cafe_pos/domain/repositories/order_repository.dart';
 import 'package:cafe_pos/domain/repositories/payment_repository.dart';
@@ -377,6 +379,8 @@ class FakeReportRepository implements ReportRepository {
 
 class FakeSettingsRepository implements SettingsRepository {
   int lastOrderNumber = 0;
+  String businessName = 'Cafetería';
+  DateTime? lastUpdatedAt;
 
   @override
   Future<int> allocateNextOrderNumber(DateTime updatedAt) async {
@@ -387,7 +391,7 @@ class FakeSettingsRepository implements SettingsRepository {
   @override
   Future<AppSettings> load() async {
     return AppSettings(
-      businessName: 'Cafetería',
+      businessName: businessName,
       timezone: 'America/El_Salvador',
       lastOrderNumber: lastOrderNumber,
     );
@@ -395,9 +399,34 @@ class FakeSettingsRepository implements SettingsRepository {
 
   @override
   Future<void> setValue(String key, String value, DateTime updatedAt) async {
+    lastUpdatedAt = updatedAt;
     if (key == 'last_order_number') {
       lastOrderNumber = int.parse(value);
+    } else if (key == 'business_name') {
+      businessName = value;
     }
+  }
+}
+
+class FakeBackupRepository implements BackupRepository {
+  BackupExportResult? exportResult;
+  BackupRestoreResult? restoreResult;
+  Object? error;
+
+  @override
+  Future<BackupExportResult?> exportBackup() async {
+    if (error case final Object value) {
+      throw value;
+    }
+    return exportResult;
+  }
+
+  @override
+  Future<BackupRestoreResult?> restoreBackup() async {
+    if (error case final Object value) {
+      throw value;
+    }
+    return restoreResult;
   }
 }
 

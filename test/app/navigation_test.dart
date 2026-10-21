@@ -2,11 +2,13 @@ import 'package:cafe_pos/app/app.dart';
 import 'package:cafe_pos/app/dependencies.dart';
 import 'package:cafe_pos/application/services/cafe_calendar.dart';
 import 'package:cafe_pos/application/services/transaction_runner.dart';
+import 'package:cafe_pos/application/use_cases/backup_use_cases.dart';
 import 'package:cafe_pos/application/use_cases/catalog_use_cases.dart';
 import 'package:cafe_pos/application/use_cases/order_use_cases.dart';
 import 'package:cafe_pos/application/use_cases/payment_use_cases.dart';
 import 'package:cafe_pos/application/use_cases/report_use_cases.dart';
 import 'package:cafe_pos/application/use_cases/sales_use_cases.dart';
+import 'package:cafe_pos/application/use_cases/settings_use_cases.dart';
 import 'package:cafe_pos/application/use_cases/table_use_cases.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -111,5 +113,7 @@ AppDependencies _dependencies() {
       calendar: calendar,
       clock: () => now,
     ),
+    settings: SettingsUseCases(settings, clock: () => now),
+    backups: BackupUseCases(FakeBackupRepository()),
   );
 }

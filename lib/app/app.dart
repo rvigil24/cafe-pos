@@ -12,8 +12,9 @@ import '../features/reports/controllers/reports_controller.dart';
 import '../features/reports/pages/reports_page.dart';
 import '../features/sales/controllers/sales_controller.dart';
 import '../features/sales/pages/sales_page.dart';
+import '../features/settings/controllers/settings_controller.dart';
+import '../features/settings/pages/settings_page.dart';
 import '../features/tables/controllers/table_controller.dart';
-import '../features/tables/pages/table_settings_page.dart';
 import 'dependencies.dart';
 import 'theme.dart';
 
@@ -112,6 +113,10 @@ class _CafeShellState extends State<CafeShell> {
   late final ReportsController _reports = ReportsController(
     widget.dependencies.reports,
   );
+  late final SettingsController _settings = SettingsController(
+    widget.dependencies.settings,
+    widget.dependencies.backups,
+  );
   int _section = 0;
   OrderController? _order;
   PaymentController? _payment;
@@ -123,6 +128,7 @@ class _CafeShellState extends State<CafeShell> {
     _tables.dispose();
     _sales.dispose();
     _reports.dispose();
+    _settings.dispose();
     _order?.dispose();
     _payment?.dispose();
     super.dispose();
@@ -209,12 +215,12 @@ class _CafeShellState extends State<CafeShell> {
       2 => SalesPage(controller: _sales),
       3 => ReportsPage(controller: _reports),
       4 => CatalogPage(controller: _catalog),
-      _ => TableSettingsPage(controller: _tables),
+      _ => SettingsPage(controller: _settings, tableController: _tables),
     };
   }
 
   void _selectSection(int value) {
-    if (_payment?.isSubmitting == true) {
+    if (_payment?.isSubmitting == true || _settings.isWorking) {
       return;
     }
     _order?.dispose();

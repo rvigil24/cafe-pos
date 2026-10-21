@@ -3,12 +3,16 @@ import 'package:timezone/timezone.dart' as tz;
 
 import '../application/services/cafe_calendar.dart';
 import '../application/services/id_generator.dart';
+import '../application/use_cases/backup_use_cases.dart';
 import '../application/use_cases/catalog_use_cases.dart';
 import '../application/use_cases/order_use_cases.dart';
 import '../application/use_cases/payment_use_cases.dart';
 import '../application/use_cases/report_use_cases.dart';
 import '../application/use_cases/sales_use_cases.dart';
+import '../application/use_cases/settings_use_cases.dart';
 import '../application/use_cases/table_use_cases.dart';
+import '../infrastructure/backup/file_picker_backup_storage.dart';
+import '../infrastructure/backup/sqlite_backup_repository.dart';
 import '../infrastructure/database/app_database.dart';
 import '../infrastructure/database/sqlite_transaction_runner.dart';
 import '../infrastructure/repositories/sqlite_category_repository.dart';
@@ -16,6 +20,7 @@ import '../infrastructure/repositories/sqlite_order_repository.dart';
 import '../infrastructure/repositories/sqlite_product_repository.dart';
 import '../infrastructure/repositories/sqlite_report_repository.dart';
 import '../infrastructure/repositories/sqlite_sales_repository.dart';
+import '../infrastructure/repositories/sqlite_settings_repository.dart';
 import '../infrastructure/repositories/sqlite_table_repository.dart';
 
 class AppDependencies {
@@ -26,6 +31,8 @@ class AppDependencies {
     required this.payments,
     required this.sales,
     required this.reports,
+    required this.settings,
+    required this.backups,
   });
 
   final CatalogUseCases catalog;
@@ -34,6 +41,8 @@ class AppDependencies {
   final PaymentUseCases payments;
   final SalesUseCases sales;
   final ReportUseCases reports;
+  final SettingsUseCases settings;
+  final BackupUseCases backups;
 }
 
 Future<AppDependencies> buildAppDependencies() async {
@@ -46,6 +55,7 @@ Future<AppDependencies> buildAppDependencies() async {
   final SqliteProductRepository products = SqliteProductRepository(database);
   final SqliteTableRepository tables = SqliteTableRepository(database);
   final SqliteOrderRepository orders = SqliteOrderRepository(database);
+  final SqliteSettingsRepository settings = SqliteSettingsRepository(database);
   final location = tz.getLocation('America/El_Salvador');
   final CafeCalendar calendar = CafeCalendar(location);
   const UuidIdGenerator ids = UuidIdGenerator();
@@ -80,6 +90,10 @@ Future<AppDependencies> buildAppDependencies() async {
       reports: SqliteReportRepository(database, location),
       calendar: calendar,
       clock: DateTime.now,
+    ),
+    settings: SettingsUseCases(settings, clock: DateTime.now),
+    backups: BackupUseCases(
+      SqliteBackupRepository(database, const FilePickerBackupStorage()),
     ),
   );
 }
