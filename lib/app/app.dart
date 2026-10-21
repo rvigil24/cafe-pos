@@ -15,6 +15,7 @@ import '../features/sales/pages/sales_page.dart';
 import '../features/settings/controllers/settings_controller.dart';
 import '../features/settings/pages/settings_page.dart';
 import '../features/tables/controllers/table_controller.dart';
+import '../shared/presentation/cafe_colors.dart';
 import 'dependencies.dart';
 import 'theme.dart';
 
@@ -140,46 +141,92 @@ class _CafeShellState extends State<CafeShell> {
       resizeToAvoidBottomInset: false,
       body: Row(
         children: <Widget>[
-          NavigationRail(
-            selectedIndex: _section,
-            labelType: NavigationRailLabelType.all,
-            scrollable: true,
-            onDestinationSelected: _selectSection,
-            destinations: const <NavigationRailDestination>[
-              NavigationRailDestination(
-                icon: Icon(Icons.home_outlined),
-                selectedIcon: Icon(Icons.home),
-                label: Text('Inicio'),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.add_shopping_cart_outlined),
-                selectedIcon: Icon(Icons.add_shopping_cart),
-                label: Text('Nueva orden'),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.receipt_long_outlined),
-                selectedIcon: Icon(Icons.receipt_long),
-                label: Text('Ventas'),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.bar_chart_outlined),
-                selectedIcon: Icon(Icons.bar_chart),
-                label: Text('Reportes'),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.inventory_2_outlined),
-                selectedIcon: Icon(Icons.inventory_2),
-                label: Text('Productos'),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.settings_outlined),
-                selectedIcon: Icon(Icons.settings),
-                label: Text('Configuración'),
-              ),
-            ],
-          ),
-          const VerticalDivider(width: 1),
+          _navigationRail(context),
           Expanded(child: _content()),
+        ],
+      ),
+    );
+  }
+
+  Widget _navigationRail(BuildContext context) {
+    final ThemeData base = Theme.of(context);
+    return Theme(
+      data: base.copyWith(
+        navigationRailTheme: NavigationRailThemeData(
+          backgroundColor: CafeColors.espresso,
+          indicatorColor: CafeColors.terracotta,
+          selectedIconTheme: const IconThemeData(color: Colors.white),
+          unselectedIconTheme: IconThemeData(
+            color: Colors.white.withValues(alpha: 0.72),
+          ),
+          selectedLabelTextStyle: const TextStyle(
+            color: Colors.white,
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+          ),
+          unselectedLabelTextStyle: TextStyle(
+            color: Colors.white.withValues(alpha: 0.72),
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+      child: NavigationRail(
+        minWidth: 104,
+        selectedIndex: _section,
+        labelType: NavigationRailLabelType.all,
+        scrollable: true,
+        leading: Padding(
+          padding: const EdgeInsets.only(top: 12, bottom: 10),
+          child: Semantics(
+            label: 'Cafe POS',
+            child: Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Icon(
+                Icons.local_cafe_rounded,
+                color: Colors.white,
+                size: 28,
+              ),
+            ),
+          ),
+        ),
+        onDestinationSelected: _selectSection,
+        destinations: const <NavigationRailDestination>[
+          NavigationRailDestination(
+            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(Icons.home_rounded),
+            label: Text('Inicio'),
+          ),
+          NavigationRailDestination(
+            icon: Icon(Icons.add_shopping_cart_outlined),
+            selectedIcon: Icon(Icons.add_shopping_cart_rounded),
+            label: Text('Nueva orden'),
+          ),
+          NavigationRailDestination(
+            icon: Icon(Icons.receipt_long_outlined),
+            selectedIcon: Icon(Icons.receipt_long_rounded),
+            label: Text('Ventas'),
+          ),
+          NavigationRailDestination(
+            icon: Icon(Icons.bar_chart_outlined),
+            selectedIcon: Icon(Icons.bar_chart_rounded),
+            label: Text('Reportes'),
+          ),
+          NavigationRailDestination(
+            icon: Icon(Icons.inventory_2_outlined),
+            selectedIcon: Icon(Icons.inventory_2_rounded),
+            label: Text('Productos'),
+          ),
+          NavigationRailDestination(
+            icon: Icon(Icons.settings_outlined),
+            selectedIcon: Icon(Icons.settings_rounded),
+            label: Text('Configuración'),
+          ),
         ],
       ),
     );
