@@ -5,7 +5,7 @@
 - State: `IN_PROGRESS`
 - Owner: Ruben Vigil
 - Branch: `milestone/6-ui-redesign`
-- Remote branch: Pending
+- Remote branch: `origin/milestone/6-ui-redesign`
 - Started: 2026-10-20
 - Completed:
 - Approval: Complete redesign plan explicitly approved by the owner on 2026-10-20. The Home and Order prototype requires owner review before rollout to the remaining screens.
@@ -103,7 +103,9 @@ Replace the default-looking presentation with a cohesive warm cafe interface tha
 
 ## Commits
 
-- Pending.
+- `0b41a8e` — `docs: plan milestone 6 UI redesign`
+- `9d5c60b` — `feat(ui): add cafe design system and shell`
+- `3c22c7f` — `feat(ui): redesign home and order prototype`
 
 ## Remaining limitations or blockers
 
