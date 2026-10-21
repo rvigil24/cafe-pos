@@ -18,8 +18,7 @@ class SqliteTransactionRunner implements TransactionRunner {
   Future<T> run<T>(
     Future<T> Function(TransactionRepositories repositories) operation,
   ) async {
-    final Database database = await _provider.database;
-    return database.transaction<T>((Transaction transaction) {
+    return _provider.transaction<T>((Transaction transaction) {
       return operation(
         TransactionRepositories(
           categories: SqliteCategoryRepository.executor(transaction),

@@ -17,8 +17,7 @@ class SqliteReportRepository implements ReportRepository {
   @override
   Future<SalesReport> load(UtcDateRange paidRange) async {
     try {
-      final Database database = await _provider.database;
-      return await database.transaction<SalesReport>((
+      return await _provider.transaction<SalesReport>((
         Transaction transaction,
       ) async {
         final List<Object?> arguments = <Object?>[

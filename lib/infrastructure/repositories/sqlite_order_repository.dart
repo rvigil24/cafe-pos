@@ -10,54 +10,57 @@ import 'sqlite_repository_support.dart';
 
 class SqliteOrderRepository implements OrderRepository {
   SqliteOrderRepository(AppDatabase provider)
-    : _executor = (() => provider.database);
+    : _executor = SqliteExecutor.database(provider);
 
   SqliteOrderRepository.executor(DatabaseExecutor executor)
-    : _executor = (() async => executor);
+    : _executor = SqliteExecutor.direct(executor);
 
-  final Future<DatabaseExecutor> Function() _executor;
+  final SqliteExecutor _executor;
 
   @override
   Future<List<Order>> listOpen() async {
-    final DatabaseExecutor database = await _executor();
-    final List<Map<String, Object?>> rows = await database.query(
-      'orders',
-      where: 'status = ?',
-      whereArgs: <Object?>['OPEN'],
-      orderBy: 'created_at ASC',
-    );
-    return rows.map(_orderFromRow).toList(growable: false);
+    return _executor.run<List<Order>>((DatabaseExecutor database) async {
+      final List<Map<String, Object?>> rows = await database.query(
+        'orders',
+        where: 'status = ?',
+        whereArgs: <Object?>['OPEN'],
+        orderBy: 'created_at ASC',
+      );
+      return rows.map(_orderFromRow).toList(growable: false);
+    });
   }
 
   @override
   Future<OrderDetails?> findDetails(String id) async {
-    final DatabaseExecutor database = await _executor();
-    final List<Map<String, Object?>> orderRows = await database.query(
-      'orders',
-      where: 'id = ?',
-      whereArgs: <Object?>[id],
-      limit: 1,
-    );
-    if (orderRows.isEmpty) {
-      return null;
-    }
-    final List<Map<String, Object?>> itemRows = await database.query(
-      'order_items',
-      where: 'order_id = ?',
-      whereArgs: <Object?>[id],
-      orderBy: 'created_at ASC, id ASC',
-    );
-    return OrderDetails(
-      order: _orderFromRow(orderRows.single),
-      items: itemRows.map(_itemFromRow).toList(growable: false),
-    );
+    return _executor.run<OrderDetails?>((DatabaseExecutor database) async {
+      final List<Map<String, Object?>> orderRows = await database.query(
+        'orders',
+        where: 'id = ?',
+        whereArgs: <Object?>[id],
+        limit: 1,
+      );
+      if (orderRows.isEmpty) {
+        return null;
+      }
+      final List<Map<String, Object?>> itemRows = await database.query(
+        'order_items',
+        where: 'order_id = ?',
+        whereArgs: <Object?>[id],
+        orderBy: 'created_at ASC, id ASC',
+      );
+      return OrderDetails(
+        order: _orderFromRow(orderRows.single),
+        items: itemRows.map(_itemFromRow).toList(growable: false),
+      );
+    });
   }
 
   @override
   Future<void> create(Order order) async {
     try {
-      final DatabaseExecutor database = await _executor();
-      await database.insert('orders', _orderToRow(order));
+      await _executor.run<void>((DatabaseExecutor database) async {
+        await database.insert('orders', _orderToRow(order));
+      });
     } on DatabaseException catch (error) {
       final String message = error.toString().toLowerCase();
       if (message.contains('orders.table_id')) {
@@ -71,50 +74,53 @@ class SqliteOrderRepository implements OrderRepository {
 
   @override
   Future<void> insertItem(OrderItem item) async {
-    final DatabaseExecutor database = await _executor();
-    await _requireOpen(database, item.orderId);
-    try {
-      await database.insert('order_items', _itemToRow(item));
-    } on DatabaseException catch (error) {
-      translateDatabaseError(error, 'No se pudo agregar el producto.');
-    }
+    await _executor.run<void>((DatabaseExecutor database) async {
+      await _requireOpen(database, item.orderId);
+      try {
+        await database.insert('order_items', _itemToRow(item));
+      } on DatabaseException catch (error) {
+        translateDatabaseError(error, 'No se pudo agregar el producto.');
+      }
+    });
   }
 
   @override
   Future<void> updateItem(OrderItem item) async {
-    final DatabaseExecutor database = await _executor();
-    final int count = await database.update(
-      'order_items',
-      <String, Object?>{
-        'quantity': item.quantity,
-        'note': item.note,
-        'updated_at': timestamp(item.updatedAt),
-      },
-      where:
-          'id = ? AND order_id = ? AND EXISTS ('
-          "SELECT 1 FROM orders WHERE id = ? AND status = 'OPEN'"
-          ')',
-      whereArgs: <Object?>[item.id, item.orderId, item.orderId],
-    );
-    if (count != 1) {
-      await _throwMissingItemOrClosed(database, item.orderId, item.id);
-    }
+    await _executor.run<void>((DatabaseExecutor database) async {
+      final int count = await database.update(
+        'order_items',
+        <String, Object?>{
+          'quantity': item.quantity,
+          'note': item.note,
+          'updated_at': timestamp(item.updatedAt),
+        },
+        where:
+            'id = ? AND order_id = ? AND EXISTS ('
+            "SELECT 1 FROM orders WHERE id = ? AND status = 'OPEN'"
+            ')',
+        whereArgs: <Object?>[item.id, item.orderId, item.orderId],
+      );
+      if (count != 1) {
+        await _throwMissingItemOrClosed(database, item.orderId, item.id);
+      }
+    });
   }
 
   @override
   Future<void> removeItem(String orderId, String itemId) async {
-    final DatabaseExecutor database = await _executor();
-    final int count = await database.delete(
-      'order_items',
-      where:
-          'id = ? AND order_id = ? AND EXISTS ('
-          "SELECT 1 FROM orders WHERE id = ? AND status = 'OPEN'"
-          ')',
-      whereArgs: <Object?>[itemId, orderId, orderId],
-    );
-    if (count != 1) {
-      await _throwMissingItemOrClosed(database, orderId, itemId);
-    }
+    await _executor.run<void>((DatabaseExecutor database) async {
+      final int count = await database.delete(
+        'order_items',
+        where:
+            'id = ? AND order_id = ? AND EXISTS ('
+            "SELECT 1 FROM orders WHERE id = ? AND status = 'OPEN'"
+            ')',
+        whereArgs: <Object?>[itemId, orderId, orderId],
+      );
+      if (count != 1) {
+        await _throwMissingItemOrClosed(database, orderId, itemId);
+      }
+    });
   }
 
   @override
@@ -123,19 +129,20 @@ class SqliteOrderRepository implements OrderRepository {
     int totalCents,
     DateTime updatedAt,
   ) async {
-    final DatabaseExecutor database = await _executor();
-    final int count = await database.update(
-      'orders',
-      <String, Object?>{
-        'total_cents': totalCents,
-        'updated_at': timestamp(updatedAt),
-      },
-      where: "id = ? AND status = 'OPEN'",
-      whereArgs: <Object?>[orderId],
-    );
-    if (count != 1) {
-      await _requireOpen(database, orderId);
-    }
+    await _executor.run<void>((DatabaseExecutor database) async {
+      final int count = await database.update(
+        'orders',
+        <String, Object?>{
+          'total_cents': totalCents,
+          'updated_at': timestamp(updatedAt),
+        },
+        where: "id = ? AND status = 'OPEN'",
+        whereArgs: <Object?>[orderId],
+      );
+      if (count != 1) {
+        await _requireOpen(database, orderId);
+      }
+    });
   }
 
   @override
@@ -144,47 +151,49 @@ class SqliteOrderRepository implements OrderRepository {
     String reason,
     DateTime cancelledAt,
   ) async {
-    final DatabaseExecutor database = await _executor();
-    final int count = await database.update(
-      'orders',
-      <String, Object?>{
-        'status': 'CANCELLED',
-        'updated_at': timestamp(cancelledAt),
-        'cancelled_at': timestamp(cancelledAt),
-        'cancellation_reason': reason,
-      },
-      where: "id = ? AND status = 'OPEN'",
-      whereArgs: <Object?>[orderId],
-    );
-    if (count != 1) {
-      await _requireOpen(database, orderId);
-    }
+    await _executor.run<void>((DatabaseExecutor database) async {
+      final int count = await database.update(
+        'orders',
+        <String, Object?>{
+          'status': 'CANCELLED',
+          'updated_at': timestamp(cancelledAt),
+          'cancelled_at': timestamp(cancelledAt),
+          'cancellation_reason': reason,
+        },
+        where: "id = ? AND status = 'OPEN'",
+        whereArgs: <Object?>[orderId],
+      );
+      if (count != 1) {
+        await _requireOpen(database, orderId);
+      }
+    });
   }
 
   @override
   Future<void> markPaid(String orderId, DateTime paidAt) async {
-    final DatabaseExecutor database = await _executor();
-    try {
-      final int count = await database.update(
-        'orders',
-        <String, Object?>{
-          'status': 'PAID',
-          'updated_at': timestamp(paidAt),
-          'paid_at': timestamp(paidAt),
-        },
-        where:
-            "id = ? AND status = 'OPEN' AND EXISTS ("
-            'SELECT 1 FROM payments WHERE order_id = ?'
-            ')',
-        whereArgs: <Object?>[orderId, orderId],
-      );
-      if (count != 1) {
-        await _requireOpen(database, orderId);
-        throw const PersistenceError('No se pudo completar el pago.');
+    await _executor.run<void>((DatabaseExecutor database) async {
+      try {
+        final int count = await database.update(
+          'orders',
+          <String, Object?>{
+            'status': 'PAID',
+            'updated_at': timestamp(paidAt),
+            'paid_at': timestamp(paidAt),
+          },
+          where:
+              "id = ? AND status = 'OPEN' AND EXISTS ("
+              'SELECT 1 FROM payments WHERE order_id = ?'
+              ')',
+          whereArgs: <Object?>[orderId, orderId],
+        );
+        if (count != 1) {
+          await _requireOpen(database, orderId);
+          throw const PersistenceError('No se pudo completar el pago.');
+        }
+      } on DatabaseException catch (error) {
+        translateDatabaseError(error, 'No se pudo completar el pago.');
       }
-    } on DatabaseException catch (error) {
-      translateDatabaseError(error, 'No se pudo completar el pago.');
-    }
+    });
   }
 
   Future<void> _requireOpen(DatabaseExecutor database, String orderId) async {

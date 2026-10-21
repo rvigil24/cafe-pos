@@ -8,52 +8,53 @@ import 'sqlite_repository_support.dart';
 
 class SqliteCategoryRepository implements CategoryRepository {
   SqliteCategoryRepository(AppDatabase provider)
-    : _executor = (() => provider.database),
-      _database = provider;
+    : _executor = SqliteExecutor.database(provider);
 
   SqliteCategoryRepository.executor(DatabaseExecutor executor)
-    : _executor = (() async => executor),
-      _database = null;
+    : _executor = SqliteExecutor.direct(executor);
 
-  final Future<DatabaseExecutor> Function() _executor;
-  final AppDatabase? _database;
+  final SqliteExecutor _executor;
 
   @override
   Future<List<Category>> listAll() async {
-    final DatabaseExecutor database = await _executor();
-    final List<Map<String, Object?>> rows = await database.query(
-      'categories',
-      orderBy: 'sort_order ASC, name COLLATE NOCASE ASC',
-    );
-    return rows.map(_fromRow).toList(growable: false);
+    return _executor.run<List<Category>>((DatabaseExecutor database) async {
+      final List<Map<String, Object?>> rows = await database.query(
+        'categories',
+        orderBy: 'sort_order ASC, name COLLATE NOCASE ASC',
+      );
+      return rows.map(_fromRow).toList(growable: false);
+    });
   }
 
   @override
   Future<Category?> findById(String id) async {
-    final DatabaseExecutor database = await _executor();
-    final List<Map<String, Object?>> rows = await database.query(
-      'categories',
-      where: 'id = ?',
-      whereArgs: <Object?>[id],
-      limit: 1,
-    );
-    return rows.isEmpty ? null : _fromRow(rows.single);
+    return _executor.run<Category?>((DatabaseExecutor database) async {
+      final List<Map<String, Object?>> rows = await database.query(
+        'categories',
+        where: 'id = ?',
+        whereArgs: <Object?>[id],
+        limit: 1,
+      );
+      return rows.isEmpty ? null : _fromRow(rows.single);
+    });
   }
 
   @override
   Future<int> nextSortOrder() async {
-    final DatabaseExecutor database = await _executor();
-    final int? maximum = Sqflite.firstIntValue(
-      await database.rawQuery('SELECT MAX(sort_order) FROM categories'),
-    );
-    return (maximum ?? -1) + 1;
+    return _executor.run<int>((DatabaseExecutor database) async {
+      final int? maximum = Sqflite.firstIntValue(
+        await database.rawQuery('SELECT MAX(sort_order) FROM categories'),
+      );
+      return (maximum ?? -1) + 1;
+    });
   }
 
   @override
   Future<void> create(Category category) async {
     try {
-      final DatabaseExecutor database = await _executor();
-      await database.insert('categories', _toRow(category));
+      await _executor.run<void>((DatabaseExecutor database) async {
+        await database.insert('categories', _toRow(category));
+      });
     } on DatabaseException catch (error) {
       translateDatabaseError(error, 'No se pudo crear la categoría.');
     }
@@ -62,21 +63,22 @@ class SqliteCategoryRepository implements CategoryRepository {
   @override
   Future<void> update(Category category) async {
     try {
-      final DatabaseExecutor database = await _executor();
-      final int count = await database.update(
-        'categories',
-        <String, Object?>{
-          'name': category.name,
-          'sort_order': category.sortOrder,
-          'is_active': boolToInt(category.isActive),
-          'updated_at': timestamp(category.updatedAt),
-        },
-        where: 'id = ?',
-        whereArgs: <Object?>[category.id],
-      );
-      if (count != 1) {
-        throw const EntityNotFoundError('La categoría ya no existe.');
-      }
+      await _executor.run<void>((DatabaseExecutor database) async {
+        final int count = await database.update(
+          'categories',
+          <String, Object?>{
+            'name': category.name,
+            'sort_order': category.sortOrder,
+            'is_active': boolToInt(category.isActive),
+            'updated_at': timestamp(category.updatedAt),
+          },
+          where: 'id = ?',
+          whereArgs: <Object?>[category.id],
+        );
+        if (count != 1) {
+          throw const EntityNotFoundError('La categoría ya no existe.');
+        }
+      });
     } on DatabaseException catch (error) {
       translateDatabaseError(error, 'No se pudo guardar la categoría.');
     }
@@ -112,13 +114,7 @@ class SqliteCategoryRepository implements CategoryRepository {
       await batch.commit(noResult: true);
     }
 
-    final AppDatabase? provider = _database;
-    if (provider == null) {
-      await operation(await _executor());
-    } else {
-      final Database database = await provider.database;
-      await database.transaction<void>(operation);
-    }
+    await _executor.transaction<void>(operation);
   }
 
   Category _fromRow(Map<String, Object?> row) {

@@ -8,51 +8,53 @@ import 'sqlite_repository_support.dart';
 
 class SqlitePaymentRepository implements PaymentRepository {
   SqlitePaymentRepository(AppDatabase provider)
-    : _executor = (() => provider.database);
+    : _executor = SqliteExecutor.database(provider);
 
   SqlitePaymentRepository.executor(DatabaseExecutor executor)
-    : _executor = (() async => executor);
+    : _executor = SqliteExecutor.direct(executor);
 
-  final Future<DatabaseExecutor> Function() _executor;
+  final SqliteExecutor _executor;
 
   @override
   Future<Payment?> findByOrderId(String orderId) async {
-    final DatabaseExecutor database = await _executor();
-    final List<Map<String, Object?>> rows = await database.query(
-      'payments',
-      where: 'order_id = ?',
-      whereArgs: <Object?>[orderId],
-      limit: 1,
-    );
-    return rows.isEmpty ? null : _fromRow(rows.single);
+    return _executor.run<Payment?>((DatabaseExecutor database) async {
+      final List<Map<String, Object?>> rows = await database.query(
+        'payments',
+        where: 'order_id = ?',
+        whereArgs: <Object?>[orderId],
+        limit: 1,
+      );
+      return rows.isEmpty ? null : _fromRow(rows.single);
+    });
   }
 
   @override
   Future<void> create(Payment payment) async {
-    final DatabaseExecutor database = await _executor();
-    final List<Map<String, Object?>> orderRows = await database.query(
-      'orders',
-      columns: <String>['status'],
-      where: 'id = ?',
-      whereArgs: <Object?>[payment.orderId],
-      limit: 1,
-    );
-    if (orderRows.isEmpty) {
-      throw const EntityNotFoundError('La orden ya no existe.');
-    }
-    if (orderRows.single['status'] != 'OPEN') {
-      throw const PaymentNotAllowedError(
-        'Solo se pueden pagar órdenes abiertas.',
+    await _executor.run<void>((DatabaseExecutor database) async {
+      final List<Map<String, Object?>> orderRows = await database.query(
+        'orders',
+        columns: <String>['status'],
+        where: 'id = ?',
+        whereArgs: <Object?>[payment.orderId],
+        limit: 1,
       );
-    }
-    try {
-      await database.insert('payments', _toRow(payment));
-    } on DatabaseException catch (error) {
-      if (error.toString().toLowerCase().contains('payments.order_id')) {
-        throw const DuplicatePaymentError('La orden ya fue pagada.');
+      if (orderRows.isEmpty) {
+        throw const EntityNotFoundError('La orden ya no existe.');
       }
-      translateDatabaseError(error, 'No se pudo guardar el pago.');
-    }
+      if (orderRows.single['status'] != 'OPEN') {
+        throw const PaymentNotAllowedError(
+          'Solo se pueden pagar órdenes abiertas.',
+        );
+      }
+      try {
+        await database.insert('payments', _toRow(payment));
+      } on DatabaseException catch (error) {
+        if (error.toString().toLowerCase().contains('payments.order_id')) {
+          throw const DuplicatePaymentError('La orden ya fue pagada.');
+        }
+        translateDatabaseError(error, 'No se pudo guardar el pago.');
+      }
+    });
   }
 
   Payment _fromRow(Map<String, Object?> row) {

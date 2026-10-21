@@ -21,27 +21,27 @@ class SqliteSalesRepository implements SalesRepository {
     PaymentMethod? paymentMethod,
   }) async {
     try {
-      final Database database = await _provider.database;
-      final List<String> clauses = <String>[
-        "o.status = 'PAID'",
-        'o.paid_at IS NOT NULL',
-      ];
-      final List<Object?> arguments = <Object?>[];
-      if (orderNumber != null) {
-        clauses.add('o.order_number = ?');
-        arguments.add(orderNumber);
-      }
-      if (paidRange != null) {
-        clauses.add('o.paid_at >= ? AND o.paid_at < ?');
-        arguments
-          ..add(_timestamp(paidRange.start))
-          ..add(_timestamp(paidRange.end));
-      }
-      if (paymentMethod != null) {
-        clauses.add('p.method = ?');
-        arguments.add(_paymentMethodToDatabase(paymentMethod));
-      }
-      final List<Map<String, Object?>> rows = await database.rawQuery('''
+      return await _provider.use<List<SaleSummary>>((Database database) async {
+        final List<String> clauses = <String>[
+          "o.status = 'PAID'",
+          'o.paid_at IS NOT NULL',
+        ];
+        final List<Object?> arguments = <Object?>[];
+        if (orderNumber != null) {
+          clauses.add('o.order_number = ?');
+          arguments.add(orderNumber);
+        }
+        if (paidRange != null) {
+          clauses.add('o.paid_at >= ? AND o.paid_at < ?');
+          arguments
+            ..add(_timestamp(paidRange.start))
+            ..add(_timestamp(paidRange.end));
+        }
+        if (paymentMethod != null) {
+          clauses.add('p.method = ?');
+          arguments.add(_paymentMethodToDatabase(paymentMethod));
+        }
+        final List<Map<String, Object?>> rows = await database.rawQuery('''
 SELECT
   o.id,
   o.order_number,
@@ -55,7 +55,8 @@ INNER JOIN payments p ON p.order_id = o.id
 WHERE ${clauses.join(' AND ')}
 ORDER BY o.paid_at DESC, o.order_number DESC
 ''', arguments);
-      return rows.map(_saleFromRow).toList(growable: false);
+        return rows.map(_saleFromRow).toList(growable: false);
+      });
     } on DatabaseException {
       throw const PersistenceError('No se pudo cargar el historial de ventas.');
     }
@@ -64,8 +65,7 @@ ORDER BY o.paid_at DESC, o.order_number DESC
   @override
   Future<SaleDetails?> findDetails(String orderId) async {
     try {
-      final Database database = await _provider.database;
-      return await database.transaction<SaleDetails?>((
+      return await _provider.transaction<SaleDetails?>((
         Transaction transaction,
       ) async {
         final List<Map<String, Object?>> saleRows = await transaction.rawQuery(

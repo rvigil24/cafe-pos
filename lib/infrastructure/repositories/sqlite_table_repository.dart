@@ -8,52 +8,53 @@ import 'sqlite_repository_support.dart';
 
 class SqliteTableRepository implements TableRepository {
   SqliteTableRepository(AppDatabase provider)
-    : _executor = (() => provider.database),
-      _database = provider;
+    : _executor = SqliteExecutor.database(provider);
 
   SqliteTableRepository.executor(DatabaseExecutor executor)
-    : _executor = (() async => executor),
-      _database = null;
+    : _executor = SqliteExecutor.direct(executor);
 
-  final Future<DatabaseExecutor> Function() _executor;
-  final AppDatabase? _database;
+  final SqliteExecutor _executor;
 
   @override
   Future<List<CafeTable>> listAll() async {
-    final DatabaseExecutor database = await _executor();
-    final List<Map<String, Object?>> rows = await database.query(
-      'cafe_tables',
-      orderBy: 'sort_order ASC, name COLLATE NOCASE ASC',
-    );
-    return rows.map(_fromRow).toList(growable: false);
+    return _executor.run<List<CafeTable>>((DatabaseExecutor database) async {
+      final List<Map<String, Object?>> rows = await database.query(
+        'cafe_tables',
+        orderBy: 'sort_order ASC, name COLLATE NOCASE ASC',
+      );
+      return rows.map(_fromRow).toList(growable: false);
+    });
   }
 
   @override
   Future<CafeTable?> findById(String id) async {
-    final DatabaseExecutor database = await _executor();
-    final List<Map<String, Object?>> rows = await database.query(
-      'cafe_tables',
-      where: 'id = ?',
-      whereArgs: <Object?>[id],
-      limit: 1,
-    );
-    return rows.isEmpty ? null : _fromRow(rows.single);
+    return _executor.run<CafeTable?>((DatabaseExecutor database) async {
+      final List<Map<String, Object?>> rows = await database.query(
+        'cafe_tables',
+        where: 'id = ?',
+        whereArgs: <Object?>[id],
+        limit: 1,
+      );
+      return rows.isEmpty ? null : _fromRow(rows.single);
+    });
   }
 
   @override
   Future<int> nextSortOrder() async {
-    final DatabaseExecutor database = await _executor();
-    final int? maximum = Sqflite.firstIntValue(
-      await database.rawQuery('SELECT MAX(sort_order) FROM cafe_tables'),
-    );
-    return (maximum ?? -1) + 1;
+    return _executor.run<int>((DatabaseExecutor database) async {
+      final int? maximum = Sqflite.firstIntValue(
+        await database.rawQuery('SELECT MAX(sort_order) FROM cafe_tables'),
+      );
+      return (maximum ?? -1) + 1;
+    });
   }
 
   @override
   Future<void> create(CafeTable table) async {
     try {
-      final DatabaseExecutor database = await _executor();
-      await database.insert('cafe_tables', _toRow(table));
+      await _executor.run<void>((DatabaseExecutor database) async {
+        await database.insert('cafe_tables', _toRow(table));
+      });
     } on DatabaseException catch (error) {
       translateDatabaseError(error, 'No se pudo crear la mesa.');
     }
@@ -92,13 +93,7 @@ class SqliteTableRepository implements TableRepository {
         }
       }
 
-      final AppDatabase? provider = _database;
-      if (provider == null) {
-        await operation(await _executor());
-      } else {
-        final Database database = await provider.database;
-        await database.transaction<void>(operation);
-      }
+      await _executor.transaction<void>(operation);
     } on DatabaseException catch (error) {
       translateDatabaseError(error, 'No se pudo guardar la mesa.');
     }
@@ -134,13 +129,7 @@ class SqliteTableRepository implements TableRepository {
       await batch.commit(noResult: true);
     }
 
-    final AppDatabase? provider = _database;
-    if (provider == null) {
-      await operation(await _executor());
-    } else {
-      final Database database = await provider.database;
-      await database.transaction<void>(operation);
-    }
+    await _executor.transaction<void>(operation);
   }
 
   CafeTable _fromRow(Map<String, Object?> row) {

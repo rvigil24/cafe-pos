@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as path;
@@ -8,6 +10,17 @@ import 'migrations/migration.dart';
 import 'migrations/migration_runner.dart';
 
 typedef MigrationLoader = Future<List<Migration>> Function();
+
+class DatabaseMaintenanceSession {
+  DatabaseMaintenanceSession._(this._owner, this.path);
+
+  final AppDatabase _owner;
+  final String path;
+
+  Future<void> close() => _owner._closeUnlocked();
+
+  Future<Database> reopen() => _owner._initializeUnlocked();
+}
 
 class AppDatabase {
   factory AppDatabase({
@@ -33,19 +46,52 @@ class AppDatabase {
   final String? _databasePath;
   final MigrationLoader _migrationLoader;
   final MigrationRunner _migrationRunner;
+  Future<void> _operationTail = Future<void>.value();
   Database? _database;
+  String? _resolvedPath;
 
   Future<Database> get database async {
     return _database ?? initialize();
   }
 
   Future<Database> initialize() async {
+    return _serialize<Database>(_initializeUnlocked);
+  }
+
+  Future<T> use<T>(Future<T> Function(Database database) operation) {
+    return _serialize<T>(() async {
+      return operation(await _initializeUnlocked());
+    });
+  }
+
+  Future<T> transaction<T>(
+    Future<T> Function(Transaction transaction) operation,
+  ) {
+    return use<T>((Database database) => database.transaction<T>(operation));
+  }
+
+  Future<T> maintain<T>(
+    Future<T> Function(DatabaseMaintenanceSession session) operation,
+  ) {
+    return _serialize<T>(() async {
+      final DatabaseMaintenanceSession session = DatabaseMaintenanceSession._(
+        this,
+        await _resolvePath(),
+      );
+      try {
+        return await operation(session);
+      } finally {
+        await _initializeUnlocked();
+      }
+    });
+  }
+
+  Future<Database> _initializeUnlocked() async {
     final Database? existing = _database;
     if (existing != null) {
       return existing;
     }
-    final String resolvedPath =
-        _databasePath ?? path.join(await getDatabasesPath(), fileName);
+    final String resolvedPath = await _resolvePath();
     final Database opened = await openDatabase(
       resolvedPath,
       singleInstance: false,
@@ -64,8 +110,29 @@ class AppDatabase {
   }
 
   Future<void> close() async {
+    await _serialize<void>(_closeUnlocked);
+  }
+
+  Future<void> _closeUnlocked() async {
     await _database?.close();
     _database = null;
+  }
+
+  Future<String> _resolvePath() async {
+    return _resolvedPath ??=
+        _databasePath ?? path.join(await getDatabasesPath(), fileName);
+  }
+
+  Future<T> _serialize<T>(Future<T> Function() operation) async {
+    final Future<void> previous = _operationTail;
+    final Completer<void> release = Completer<void>();
+    _operationTail = release.future;
+    await previous;
+    try {
+      return await operation();
+    } finally {
+      release.complete();
+    }
   }
 
   static Future<List<Migration>> _loadBundledMigrations() async {

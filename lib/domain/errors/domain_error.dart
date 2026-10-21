@@ -48,3 +48,11 @@ final class PaymentNotAllowedError extends DomainError {
 final class PersistenceError extends DomainError {
   const PersistenceError(super.message);
 }
+
+final class BackupValidationError extends DomainError {
+  const BackupValidationError(super.message);
+}
+
+final class BackupOperationError extends DomainError {
+  const BackupOperationError(super.message);
+}
