@@ -25,16 +25,14 @@ active milestone evidence file.
 - [ ] Restore the valid export and confirm catalog, tables, orders, payments, settings, history, and report totals match it.
 - [ ] Confirm the app remains usable immediately after restore without being reinstalled.
 
-## Offline, restart, and update
+## Restart and update
 
-- [ ] With USB debugging available, enable airplane mode; do not use Wi-Fi debugging for this check.
-- [ ] Complete product → order → payment → history → report while offline.
 - [ ] Leave an order open, force-stop Cafe POS, reopen it, and confirm the order is preserved.
 - [ ] Reboot the device, reopen Cafe POS, and confirm the same persisted state.
 - [ ] Install the candidate APK over the previous APK without uninstalling or clearing app data.
 - [ ] Confirm existing data and the next sequential order number survive the update.
 - [ ] Confirm a previously migrated database does not run a migration twice.
-- [ ] Disable airplane mode during cleanup and leave the production-entry APK installed.
+- [ ] Leave the production-entry APK installed after cleanup.
 
 ## Touch, errors, and accessibility
 

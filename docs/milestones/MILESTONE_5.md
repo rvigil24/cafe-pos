@@ -8,7 +8,7 @@
 - Remote branch: `origin/milestone/5-backup-restore-hardening`
 - Started: 2026-10-20
 - Completed:
-- Approval: Plan approved by the owner on 2026-10-20.
+- Approval: Plan approved by the owner on 2026-10-20; connectivity-toggle verification removed from scope by explicit owner direction on the same date.
 
 ## Objective and output
 
@@ -25,7 +25,7 @@ preventive backup, and verifies that history and reports still match.
 - [x] Version, schema, integrity, and foreign-key validation before restore.
 - [x] Preventive backup, safe replacement, supported migration, and rollback.
 - [x] Business-name setting required by the PRD.
-- [ ] Airplane-mode, restart, APK-update, migration, accessibility, and error-state hardening.
+- [x] Restart, APK-update, migration, accessibility, and error-state hardening.
 - [x] Sanitized example backup, tablet checklist, release notes, upgrade procedure, and candidate APK evidence.
 
 ### Excluded
@@ -43,7 +43,7 @@ preventive backup, and verifies that history and reports still match.
 | Check compatibility using `PRAGMA user_version` | `BackupValidator` supports versions 1 through 2 | Future version rejected; version 1 migrated to 2 | Covered on physical target |
 | Create a preventive backup before a valid restore | App-support preventive copy before replacement | Preventive copy contents asserted | Restore completed through DocumentsUI |
 | Preserve totals and history after restore | Whole SQLite database replacement and post-validation | Catalog/order/payment/settings counts and restored values asserted | Valid SAF restore returned successfully |
-| Work in airplane mode and survive restart/update | Offline-only local stack and persisted SQLite | Existing migration and repository suites | App restart and APK update passed; airplane mode and full device reboot pending |
+| Survive restart and update | Persisted local SQLite | Existing migration and repository suites | App restart, APK update, and full device reboot preserved `RebootProof` |
 | Run migrations once and roll back failed migrations | Migration runner plus restore rollback | Version-1 migration and injected post-replacement failure pass | Covered on physical target |
 | Cover affected UI states and accessibility | Settings controller/page with confirmation, progress, errors, semantics, and scroll | Four widget tests, including short landscape viewport | 2720×1224 landscape controls and semantics inspected |
 
@@ -84,7 +84,7 @@ preventive backup, and verifies that history and reports still match.
 | `flutter analyze` | Pass | No issues found. |
 | `flutter test` | Pass | 66 tests. |
 | `flutter test integration_test -d adb-143332555G110895-88cwLo._adb-tls-connect._tcp` | Pass | 14 tests on the physical Infinix X6873, including five backup/restore cases. |
-| `flutter build apk --debug` | Pass | Candidate SHA-256: `d33bcc2db879d23a8e7462fde6e2a0c03c5badd5db831def9aa286b14b55cfde`. |
+| `flutter build apk --debug` | Pass | Production-entry candidate SHA-256: `1257d99e3cd376959db0738b5521c3fffe63e31436e77019f069147a6bb7f28d`. |
 | `flutter run -d adb-143332555G110895-88cwLo._adb-tls-connect._tcp --no-build --no-resident --use-application-binary=build/app/outputs/flutter-apk/app-debug.apk` | Pass | Candidate installed and launched on the physical target. |
 | Example backup validation | Pass | SQLite integrity `ok`, foreign keys clean, `user_version=2`, expected counts `1/1/1/1/1/1/3`; SHA-256 `f4380a74288b002d21fbcb5a54c63e57813f1b79973463daa1dd94018b7864d2`. |
 
@@ -98,7 +98,7 @@ preventive backup, and verifies that history and reports still match.
 | 1 | Export through Android storage. | A validated SQLite backup is created. | Pass: DocumentsUI opened with a generated `.db` name and saved the file in Downloads. |
 | 2 | Select an invalid backup. | Restore is rejected and current data remains. | Pass in the Android integration suite for corrupt, future-version, and incomplete-schema files; direct SAF selection remains on the owner checklist. |
 | 3 | Restore a valid backup. | A preventive backup is created and restored history/totals match. | Pass: the exported file was selected in DocumentsUI and the app resumed; automated Android assertions verified the preventive copy and restored data. |
-| 4 | Install the candidate over the existing app and restart in airplane mode. | Existing data remains and the app works offline. | Partial: `adb install -r` and force-stop/relaunch both preserved `CafeUpgrade`. Airplane mode and a full device reboot are pending because the current ADB transport is wireless. |
+| 4 | Install the candidate over the existing app and restart the device. | Existing data remains after update and reboot. | Pass: `adb install -r` and force-stop/relaunch preserved local data; after a full device reboot, the production-entry APK opened and retained `RebootProof`. |
 
 ## Review
 
@@ -123,7 +123,6 @@ preventive backup, and verifies that history and reports still match.
 
 ## Remaining limitations or blockers
 
-- Airplane-mode and full device-reboot checks remain required. Enabling airplane mode would drop the current wireless ADB transport; perform them with USB debugging or direct owner interaction and record the result before completion.
 - Owner acceptance has not yet been requested or recorded.
 
 ## Completion decision

@@ -8,27 +8,13 @@ require_file "${ADB}"
 device_id="$(resolve_android_device)"
 echo "Using Android device ${device_id}."
 
-offline=false
-if [[ "${1:-}" == '--offline' ]]; then
-  offline=true
-elif [[ -n "${1:-}" ]]; then
-  echo "Usage: $0 [--offline]" >&2
+if [[ -n "${1:-}" ]]; then
+  echo "Usage: $0" >&2
   exit 2
-fi
-
-if [[ "${offline}" == true && "${device_id}" == *:* ]]; then
-  echo 'Offline testing requires a USB connection.' >&2
-  echo 'Airplane mode would disconnect the current Wi-Fi debugging session.' >&2
-  exit 1
 fi
 
 echo 'Building the debug APK...'
 flutter build apk --debug
-
-if [[ "${offline}" == true ]]; then
-  "${ADB}" -s "${device_id}" shell cmd connectivity airplane-mode enable
-  echo 'Airplane mode enabled.'
-fi
 
 flutter run \
   -d "${device_id}" \

@@ -125,7 +125,6 @@ Report periods are calculated in `America/El_Salvador` and converted to half-ope
 
 ## 5. Non-functional requirements
 
-- Work completely in airplane mode.
 - Preserve open orders after app close or device restart.
 - Use large, touch-friendly controls.
 - Preserve data integrity if the app closes during a payment.

@@ -70,7 +70,7 @@ Output: a new payment appears correctly in history and reports.
 - Export a consistent backup through Android file storage.
 - Validate backup version, integrity, and schema.
 - Create a preventive backup and restore valid data.
-- Test airplane mode, restarts, updates, and migrations.
+- Test restarts, updates, and migrations.
 - Review touch accessibility and error states.
 - Produce a sanitized example backup, a manual tablet test checklist, release notes, and an upgrade procedure.
 - Produce a candidate APK.

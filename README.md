@@ -55,7 +55,6 @@ Use the single project command from the repository root:
 ./cafe test       # Run the complete validation suite
 ./cafe seed       # Add missing dummy tables, categories, and products
 ./cafe reset      # Erase all local Cafe POS data after explicit confirmation
-./cafe offline    # Build and launch after enabling airplane mode
 ./cafe devices    # Show detected Android and Flutter devices
 ```
 
@@ -74,8 +73,6 @@ files outside the app are not deleted. For intentional non-interactive use, run
 For Wi-Fi setup, enable `Developer options > Wireless debugging` on an Android 11 or newer phone and run `./cafe pair`. The command asks for the pairing address and six-digit code shown by Android, then discovers or requests the connection address and verifies Flutter connectivity. Pairing normally needs to be completed only once.
 
 USB also works: enable USB debugging, connect the phone, and accept its authorization prompt. Device selection is automatic when exactly one phone or tablet is available. If several devices are connected, select one with `CAFE_POS_DEVICE=<adb-serial>`.
-
-Use `./cafe offline` only with USB. Enabling airplane mode would terminate a Wi-Fi debugging connection.
 
 The integration-test APK is built before it is installed, then exercised with `flutter drive` as a prebuilt binary. This avoids running the Android emulator and Gradle together on the development machine. `check.sh` does not require an Android device.
 

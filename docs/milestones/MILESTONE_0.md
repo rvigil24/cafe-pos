@@ -41,7 +41,6 @@ Create a clean Flutter Android project in this repository without implementing P
 | Tablet landscape | Two landscape orientations configured | Configuration review | Rotate emulator |
 | Package compatibility | Approved dependencies resolve and compile | Package and Android integration smoke tests | Debug APK installation |
 | Architecture skeleton | Required top-level source directories | Repository review | Not applicable |
-| Airplane-mode bootstrap | No network dependency in runtime app | Not applicable | Relaunch with airplane mode |
 
 ## Plan
 
@@ -93,14 +92,13 @@ Create a clean Flutter Android project in this repository without implementing P
 
 - Environment/device: Android 16/API 36 `medium_tablet` AVD, 2560x1600, constrained to 1.5 GB RAM and 2 CPU cores.
 - Owner verification device: Android phone connected through wireless debugging; exact model and OS version were not recorded.
-- Initial setup: Fresh Android emulator; debug APK installed; airplane mode enabled for the offline relaunch.
+- Initial setup: Fresh Android emulator with the debug APK installed.
 
 | Step | Action | Expected result | Actual result |
 | --- | --- | --- | --- |
 | 1 | Launch the debug app on a tablet emulator. | Bootstrap screen opens without error. | Pass — `Cafe POS` and `Milestone 0 ready` rendered; no Flutter or Android runtime error was logged. |
 | 2 | Rotate between both landscape directions. | App remains landscape and usable. | Pass — activity remained resumed in `land` at `ROTATION_0` and `ROTATION_180`. |
-| 3 | Enable airplane mode and relaunch. | Bootstrap screen opens without network access. | Pass — `airplane_mode_on=1`; the same bootstrap screen rendered. |
-| 4 | Pair an Android phone over Wi-Fi and run the unified validation command. | Pairing, build, tests, installation, and launch complete successfully. | Pass — confirmed by the owner on 2026-09-29. |
+| 3 | Pair an Android phone over Wi-Fi and run the unified validation command. | Pairing, build, tests, installation, and launch complete successfully. | Pass — confirmed by the owner on 2026-09-29. |
 
 ## Review
 

@@ -13,7 +13,6 @@ Commands:
   devices    Show connected Android and Flutter devices
   check      Run formatting, analysis, and fast tests
   run        Build and launch Cafe POS on the connected device
-  offline    Build and launch Cafe POS in airplane mode
   test       Run the complete validation suite on the connected device
   seed       Add missing dummy tables, categories, and products on the device
   reset      Erase all local Cafe POS data on the connected device
@@ -33,9 +32,6 @@ case "${1:-help}" in
     ;;
   run)
     exec "${project_root}/scripts/run.sh"
-    ;;
-  offline)
-    exec "${project_root}/scripts/run.sh" --offline
     ;;
   test)
     exec "${project_root}/scripts/test-all.sh"

@@ -74,7 +74,6 @@
 
 ## Quality and operation
 
-- The complete product → order → payment → report flow works in airplane mode.
 - Every persisted application timestamp uses canonical ISO-8601 UTC text with a `Z` suffix.
 - An application update preserves existing data.
 - Migrations do not run twice.
