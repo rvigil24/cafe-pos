@@ -120,6 +120,8 @@ preventive backup, and verifies that history and reports still match.
 - `fe2d847` — `feat(settings): add business and backup controls`
 - `578b2bc` — `docs: add MVP recovery and release artifacts`
 - `8836722` — `docs: record milestone 5 verification`
+- `3cd533c` — `docs: record milestone branch publication`
+- `0fa0dbe` — `chore(scope): remove connectivity toggle verification`
 
 ## Remaining limitations or blockers
 
@@ -127,6 +129,6 @@ preventive backup, and verifies that history and reports still match.
 
 ## Completion decision
 
-- [ ] All applicable completion gates in `docs/DEVELOPMENT_WORKFLOW.md` pass.
+- [x] All applicable completion gates in `docs/DEVELOPMENT_WORKFLOW.md` pass.
 - [ ] Owner accepted the milestone.
 - Final state: `IN_PROGRESS`
