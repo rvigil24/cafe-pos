@@ -69,6 +69,7 @@ If a product already in the order becomes sold out or inactive, keep the line vi
 ### Payment
 
 - Prominent total.
+- Show the order summary and total beside the payment form; keep confirmation anchored while the form scrolls.
 - Method selector: cash, transfer, or credit card.
 - Cash: amount received, calculated change, and validation.
 - Transfer: optional reference and manual-verification confirmation.
@@ -84,6 +85,7 @@ If a product already in the order becomes sold out or inactive, keep the line vi
 - Search by order number.
 - Date and payment filters.
 - Read-only detail view.
+- Group compact filters above a list-detail layout with an explicit selected sale and paid badge.
 
 ### Reports
 
@@ -92,6 +94,7 @@ If a product already in the order becomes sold out or inactive, keep the line vi
 - Best-selling products.
 - Sales by category, hour, and payment method.
 - Charts must include readable values and accessible labels.
+- Use prominent KPI cards and simple proportional bars for comparisons.
 
 ### Products
 
@@ -100,10 +103,12 @@ If a product already in the order becomes sold out or inactive, keep the line vi
 - Reorder categories; list products alphabetically within each category.
 - Explain that deactivating a category hides its products from order entry without deactivating them individually.
 - Quick availability toggle.
+- Keep categories in a lateral panel and group product administrative actions below text-and-icon availability badges.
 
 ### Settings
 
 - Tables.
+- Use internal navigation between Tables and Business/Backups, with one shared page header and full-width content.
 - Prevent deactivation of an occupied table and explain why the action is unavailable.
 - Business name.
 - Export backup.
