@@ -2,7 +2,8 @@
 
 Date: 2026-10-21, America/El_Salvador.
 Branch: `fix/android-release`.
-State: implementation and verification passed; ready for publication.
+State: verified and published as a GitHub prerelease on 2026-10-21 at 21:51
+America/El_Salvador (`2026-10-22T03:51:04Z`).
 Owner approved `docs/RELEASE_PLAN.md` with "lo apruebo" and separately authorized
 backing up, replacing the debug installation, and restoring the physical device.
 
@@ -62,6 +63,7 @@ artifacts must not be committed or attached to a release.
 ## Physical Android verification
 
 Device: Infinix X6873, Android 16/API 36, arm64, connected through wireless ADB.
+Flutter device ID: `adb-143332555G110895-88cwLo._adb-tls-connect._tcp`.
 No emulator, AVD, or QEMU was started. The production entry point is `lib/main.dart`.
 
 Before any replacement, force-stopped the debug app, captured its private data
@@ -91,12 +93,26 @@ formatting, and analysis passed) and `flutter build apk --debug` (passed).
 
 ## Publication
 
-- Source: the commit resolved by tag `v1.0.0-beta.1`; verify with
-  `git rev-parse v1.0.0-beta.1^{commit}`.
+- Source: `00e7c3ee6e076b50f357708e81bfd9be84d19991`, resolved by annotated tag
+  `v1.0.0-beta.1`; confirmed against the pushed remote tag and release target.
 - URL: https://github.com/rvigil24/cafe-pos/releases/tag/v1.0.0-beta.1
 - Assets: `cafe-pos-1.0.0-beta.1.apk`, `SHA256SUMS`, `INSTRUCCIONES.md`.
 - APK SHA-256: `c5c26187b753b4ddbee1bad116a20ede8a36819f573035e8053915d0d0bca5c1`.
-- Download checksum verification: pending.
+- Download verification: all three draft assets downloaded using
+  `gh release download v1.0.0-beta.1 --dir build/release-artifacts/download-verification`
+  and compared byte-for-byte to the local artifacts. SHA-256 also matches the
+  GitHub API's asset digest. After publication, the final APK URL responds to
+  an unauthenticated HTTP HEAD request with status 200 and 53,761,819 bytes.
+- Publication: `gh release create` with `--verify-tag --draft --prerelease`,
+  reviewed release notes and only the three intended assets, followed by
+  `gh release edit v1.0.0-beta.1 --target 00e7c3ee6e076b50f357708e81bfd9be84d19991
+  --verify-tag --draft=false --prerelease`. API confirms `isDraft = false` and
+  `isPrerelease = true`.
+- Delivery source commit: `00e7c3e` (`build(android): prepare signed beta release`).
+  This subsequent publication record changes documentation only; the tag and
+  published APK remain pinned to the verified delivery source.
+- Branch `fix/android-release` is pushed to its matching upstream. `main` is
+  unchanged pending owner acceptance of the delivered result.
 
 ## Operational limitations
 

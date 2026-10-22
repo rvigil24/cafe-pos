@@ -1,8 +1,8 @@
 # First GitHub prerelease
 
 Date: 2026-10-21 (America/El_Salvador).
-State: approved by the owner on 2026-10-21 ("lo apruebo"); implementation and
-verification passed. Publication is in progress. See
+State: approved by the owner on 2026-10-21 ("lo apruebo"); implementation,
+verification, and GitHub prerelease publication completed on 2026-10-21. See
 `docs/RELEASE_EVIDENCE_1.0.0-beta.1.md`.
 
 ## Objective and scope
