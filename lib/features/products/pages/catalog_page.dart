@@ -220,7 +220,7 @@ class _CatalogPageState extends State<CatalogPage> {
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                   gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                     maxCrossAxisExtent: 390,
-                    mainAxisExtent: 140,
+                    mainAxisExtent: 164,
                     crossAxisSpacing: 10,
                     mainAxisSpacing: 10,
                   ),
@@ -241,14 +241,22 @@ class _CatalogPageState extends State<CatalogPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
+            Text(
+              product.name,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 6),
             Row(
               children: <Widget>[
                 Expanded(
                   child: Text(
-                    product.name,
+                    formatPriceCents(product.priceCents),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleMedium,
+                    style: Theme.of(context).textTheme.titleLarge
+                        ?.copyWith(color: CafeColors.terracotta),
                   ),
                 ),
                 PosStatusPill(
@@ -270,11 +278,6 @@ class _CatalogPageState extends State<CatalogPage> {
                             : CafeColors.dangerSoft),
                 ),
               ],
-            ),
-            Text(
-              formatPriceCents(product.priceCents),
-              style: Theme.of(context).textTheme.titleLarge
-                  ?.copyWith(color: CafeColors.terracotta),
             ),
             const Spacer(),
             Row(

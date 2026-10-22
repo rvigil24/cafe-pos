@@ -111,6 +111,11 @@ void main() {
     expect(confirmation, findsOneWidget);
     expect(tester.getRect(confirmation).bottom, lessThanOrEqualTo(360));
     expect(find.text('Total a cobrar'), findsOneWidget);
+    final Finder received = find.widgetWithText(TextField, 'Monto recibido');
+    expect(
+      tester.getRect(received).bottom,
+      lessThan(tester.getRect(confirmation).top),
+    );
   });
 
   test(

@@ -182,13 +182,11 @@ class _PaymentPageState extends State<PaymentPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: <Widget>[
-                          Text(
-                            'Método de pago',
-                            style: Theme.of(context).textTheme.titleLarge,
+                          Semantics(
+                            label: 'Método de pago',
+                            child: _methodSelector(),
                           ),
                           const SizedBox(height: 12),
-                          _methodSelector(),
-                          const SizedBox(height: 20),
                           if (widget.controller.method == PaymentMethod.cash)
                             _cashFields()
                           else
@@ -239,33 +237,48 @@ class _PaymentPageState extends State<PaymentPage> {
   }
 
   Widget _methodSelector() {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
+    return Row(
       children: <Widget>[
-        _methodChip(PaymentMethod.cash, 'Efectivo', Icons.payments_outlined),
-        _methodChip(
-          PaymentMethod.transfer,
-          'Transferencia',
-          Icons.account_balance_outlined,
-        ),
-        _methodChip(
-          PaymentMethod.creditCard,
-          'Tarjeta de crédito',
-          Icons.credit_card,
+        Expanded(child: _methodButton(PaymentMethod.cash, 'Efectivo')),
+        const SizedBox(width: 8),
+        Expanded(child: _methodButton(PaymentMethod.transfer, 'Transferencia')),
+        const SizedBox(width: 8),
+        Expanded(
+          child: _methodButton(PaymentMethod.creditCard, 'Tarjeta de crédito'),
         ),
       ],
     );
   }
 
-  Widget _methodChip(PaymentMethod method, String label, IconData icon) {
-    return ChoiceChip(
+  Widget _methodButton(PaymentMethod method, String label) {
+    return Semantics(
       selected: widget.controller.method == method,
-      onSelected: widget.controller.isSubmitting
-          ? null
-          : (_) => widget.controller.selectMethod(method),
-      avatar: Icon(icon, size: 20),
-      label: Text(label),
+      child: SizedBox(
+        height: 56,
+        child: OutlinedButton(
+          onPressed: widget.controller.isSubmitting
+              ? null
+              : () => widget.controller.selectMethod(method),
+          style: OutlinedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 6),
+            backgroundColor: widget.controller.method == method
+                ? CafeColors.terracottaSoft
+                : Colors.white,
+            foregroundColor: CafeColors.espresso,
+            side: BorderSide(
+              color: widget.controller.method == method
+                  ? CafeColors.terracotta
+                  : CafeColors.outline,
+            ),
+          ),
+          child: Text(
+            label,
+            maxLines: 2,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+          ),
+        ),
+      ),
     );
   }
 
