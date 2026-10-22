@@ -7,6 +7,8 @@ import '../../../domain/entities/sale.dart';
 import '../../../shared/dates/cafe_dates.dart';
 import '../../../shared/money/money_parser.dart';
 import '../../../shared/payments/payment_format.dart';
+import '../../../shared/presentation/cafe_colors.dart';
+import '../../../shared/presentation/pos_page.dart';
 import '../controllers/sales_controller.dart';
 
 class SalesPage extends StatefulWidget {
@@ -48,25 +50,23 @@ class _SalesPageState extends State<SalesPage> {
     return AnimatedBuilder(
       animation: widget.controller,
       builder: (BuildContext context, Widget? child) {
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text('Ventas'),
-            actions: <Widget>[
-              IconButton(
-                tooltip: 'Actualizar ventas',
-                onPressed: widget.controller.status == SalesStatus.loading
-                    ? null
-                    : widget.controller.load,
-                icon: const Icon(Icons.refresh),
-              ),
-            ],
-          ),
+        return PosPage(
+          title: 'Ventas',
+          subtitle: 'Consulta comprobantes y detalles de ventas pagadas',
+          isWorking: widget.controller.status == SalesStatus.loading,
+          actions: <Widget>[
+            IconButton.filledTonal(
+              tooltip: 'Actualizar ventas',
+              onPressed: widget.controller.status == SalesStatus.loading
+                  ? null
+                  : widget.controller.load,
+              icon: const Icon(Icons.refresh),
+            ),
+          ],
           body: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
               _filters(),
-              if (widget.controller.status == SalesStatus.loading)
-                const LinearProgressIndicator(),
               Expanded(child: _body()),
             ],
           ),
@@ -78,69 +78,72 @@ class _SalesPageState extends State<SalesPage> {
   Widget _filters() {
     final DateTimeRange? range = _dateRange;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-      child: Wrap(
-        spacing: 12,
-        runSpacing: 12,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        children: <Widget>[
-          SizedBox(
-            width: 190,
-            child: TextField(
-              controller: _orderNumber,
-              keyboardType: TextInputType.number,
-              textInputAction: TextInputAction.search,
-              decoration: const InputDecoration(
-                labelText: 'Número de orden',
-                prefixIcon: Icon(Icons.search),
-              ).copyWith(errorText: widget.controller.orderNumberError),
-              onSubmitted: (_) => _applyFilters(),
+      padding: const EdgeInsets.fromLTRB(14, 14, 14, 0),
+      child: PosSurface(
+        padding: const EdgeInsets.all(12),
+        child: Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: <Widget>[
+            SizedBox(
+              width: 190,
+              child: TextField(
+                controller: _orderNumber,
+                keyboardType: TextInputType.number,
+                textInputAction: TextInputAction.search,
+                decoration: const InputDecoration(
+                  labelText: 'Número de orden',
+                  prefixIcon: Icon(Icons.search),
+                ).copyWith(errorText: widget.controller.orderNumberError),
+                onSubmitted: (_) => _applyFilters(),
+              ),
             ),
-          ),
-          OutlinedButton.icon(
-            onPressed: _chooseDates,
-            icon: const Icon(Icons.date_range),
-            label: Text(
-              range == null
-                  ? 'Todas las fechas'
-                  : '${formatCafeDate(range.start)} – ${formatCafeDate(range.end)}',
+            OutlinedButton.icon(
+              onPressed: _chooseDates,
+              icon: const Icon(Icons.date_range),
+              label: Text(
+                range == null
+                    ? 'Todas las fechas'
+                    : '${formatCafeDate(range.start)} – ${formatCafeDate(range.end)}',
+              ),
             ),
-          ),
-          SizedBox(
-            width: 190,
-            child: DropdownButtonFormField<PaymentMethod?>(
-              key: ValueKey<PaymentMethod?>(_method),
-              initialValue: _method,
-              isExpanded: true,
-              decoration: const InputDecoration(labelText: 'Método'),
-              items: <DropdownMenuItem<PaymentMethod?>>[
-                const DropdownMenuItem<PaymentMethod?>(child: Text('Todos')),
-                ...PaymentMethod.values.map(
-                  (PaymentMethod value) => DropdownMenuItem<PaymentMethod?>(
-                    value: value,
-                    child: Text(paymentMethodLabel(value)),
+            SizedBox(
+              width: 190,
+              child: DropdownButtonFormField<PaymentMethod?>(
+                key: ValueKey<PaymentMethod?>(_method),
+                initialValue: _method,
+                isExpanded: true,
+                decoration: const InputDecoration(labelText: 'Método'),
+                items: <DropdownMenuItem<PaymentMethod?>>[
+                  const DropdownMenuItem<PaymentMethod?>(child: Text('Todos')),
+                  ...PaymentMethod.values.map(
+                    (PaymentMethod value) => DropdownMenuItem<PaymentMethod?>(
+                      value: value,
+                      child: Text(paymentMethodLabel(value)),
+                    ),
                   ),
-                ),
-              ],
-              onChanged: (PaymentMethod? value) {
-                setState(() => _method = value);
-              },
+                ],
+                onChanged: (PaymentMethod? value) {
+                  setState(() => _method = value);
+                },
+              ),
             ),
-          ),
-          FilledButton.icon(
-            onPressed: widget.controller.status == SalesStatus.loading
-                ? null
-                : _applyFilters,
-            icon: const Icon(Icons.filter_alt),
-            label: const Text('Aplicar'),
-          ),
-          TextButton(
-            onPressed: widget.controller.status == SalesStatus.loading
-                ? null
-                : _clearFilters,
-            child: const Text('Limpiar'),
-          ),
-        ],
+            FilledButton.icon(
+              onPressed: widget.controller.status == SalesStatus.loading
+                  ? null
+                  : _applyFilters,
+              icon: const Icon(Icons.filter_alt),
+              label: const Text('Aplicar'),
+            ),
+            TextButton(
+              onPressed: widget.controller.status == SalesStatus.loading
+                  ? null
+                  : _clearFilters,
+              child: const Text('Limpiar'),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -157,19 +160,35 @@ class _SalesPageState extends State<SalesPage> {
           label: Text(widget.controller.errorMessage!),
         ),
       ),
-      SalesStatus.ready =>
-        widget.controller.sales.isEmpty
-            ? const Center(
-                child: Text('No hay ventas que coincidan con los filtros.'),
+      SalesStatus.ready => Padding(
+        padding: const EdgeInsets.all(14),
+        child: widget.controller.sales.isEmpty
+            ? const PosSurface(
+                child: Center(
+                  child: Text('No hay ventas que coincidan con los filtros.'),
+                ),
               )
             : Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
-                  Expanded(flex: 2, child: _salesList()),
-                  const VerticalDivider(width: 1),
-                  Expanded(flex: 3, child: _details()),
+                  Expanded(
+                    flex: 2,
+                    child: PosSurface(
+                      padding: EdgeInsets.zero,
+                      child: _salesList(),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    flex: 3,
+                    child: PosSurface(
+                      padding: EdgeInsets.zero,
+                      child: _details(),
+                    ),
+                  ),
                 ],
               ),
+      ),
     };
   }
 
@@ -182,6 +201,7 @@ class _SalesPageState extends State<SalesPage> {
         final bool selected =
             widget.controller.selected?.sale.orderId == sale.orderId;
         return Card(
+          color: selected ? CafeColors.terracottaSoft : Colors.white,
           child: Semantics(
             button: true,
             label:
@@ -190,6 +210,7 @@ class _SalesPageState extends State<SalesPage> {
                 '${paymentMethodLabel(sale.paymentMethod)}',
             child: ListTile(
               selected: selected,
+              selectedTileColor: CafeColors.terracottaSoft,
               onTap: () => widget.controller.selectSale(sale.orderId),
               title: Text('Orden #${sale.orderNumber}'),
               subtitle: Text(
@@ -228,9 +249,21 @@ class _SalesPageState extends State<SalesPage> {
     return ListView(
       padding: const EdgeInsets.all(20),
       children: <Widget>[
-        Text(
-          'Orden #${details.sale.orderNumber}',
-          style: Theme.of(context).textTheme.headlineSmall,
+        Row(
+          children: <Widget>[
+            Expanded(
+              child: Text(
+                'Orden #${details.sale.orderNumber}',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+            ),
+            PosStatusPill(
+              label: 'Pagada',
+              icon: Icons.check_circle_outline,
+              foreground: CafeColors.sage,
+              background: CafeColors.sageSoft,
+            ),
+          ],
         ),
         const SizedBox(height: 4),
         Text(

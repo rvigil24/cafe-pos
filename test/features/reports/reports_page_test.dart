@@ -60,6 +60,10 @@ void main() {
     expect(find.text('Bebidas'), findsOneWidget);
     expect(find.text('14:00'), findsOneWidget);
     expect(find.text('Efectivo'), findsOneWidget);
+    await tester.binding.setSurfaceSize(const Size(696, 278));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    expect(find.text('15.00'), findsOneWidget);
   });
 
   testWidgets('shows the report empty state', (WidgetTester tester) async {

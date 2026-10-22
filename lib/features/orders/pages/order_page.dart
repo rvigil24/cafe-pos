@@ -55,7 +55,7 @@ class _OrderPageState extends State<OrderPage> {
               label: widget.controller.isSaving ? 'Guardando…' : 'Guardado',
               icon: widget.controller.isSaving
                   ? Icons.sync
-                  : Icons.cloud_done_outlined,
+                  : Icons.done_all_rounded,
               foreground: CafeColors.sage,
               background: CafeColors.sageSoft,
             ),
@@ -330,8 +330,7 @@ class _OrderPageState extends State<OrderPage> {
                       },
                     ),
             ),
-            Container(
-              color: CafeColors.espresso,
+            PosActionBar(
               padding: const EdgeInsets.fromLTRB(18, 14, 18, 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,

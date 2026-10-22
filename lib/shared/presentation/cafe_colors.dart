@@ -9,11 +9,11 @@ abstract final class CafeColors {
   static const Color espressoSoft = Color(0xFF4A352C);
   static const Color ink = Color(0xFF3F3733);
   static const Color muted = Color(0xFF746A64);
-  static const Color terracotta = Color(0xFFB95636);
+  static const Color terracotta = Color(0xFF9E452C);
   static const Color terracottaSoft = Color(0xFFF5D9CC);
-  static const Color sage = Color(0xFF53745A);
+  static const Color sage = Color(0xFF49664F);
   static const Color sageSoft = Color(0xFFDCE9DC);
-  static const Color amber = Color(0xFFA96E16);
+  static const Color amber = Color(0xFF855212);
   static const Color amberSoft = Color(0xFFFFE8B8);
   static const Color danger = Color(0xFFB3261E);
   static const Color dangerSoft = Color(0xFFF9DEDC);

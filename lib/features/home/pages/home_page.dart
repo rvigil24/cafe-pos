@@ -175,21 +175,21 @@ class _HomePageState extends State<HomePage> {
         .where((CafeTable table) => data.orderForTable(table.id) != null)
         .length;
     final List<Widget> metrics = <Widget>[
-      _SummaryMetric(
+      PosMetricCard(
         label: 'Mesas libres',
         value: '${data.tables.length - occupied}',
         icon: Icons.table_restaurant_outlined,
         foreground: CafeColors.sage,
         background: CafeColors.sageSoft,
       ),
-      _SummaryMetric(
+      PosMetricCard(
         label: 'Mesas ocupadas',
         value: '$occupied',
         icon: Icons.receipt_long_outlined,
         foreground: CafeColors.terracotta,
         background: CafeColors.terracottaSoft,
       ),
-      _SummaryMetric(
+      PosMetricCard(
         label: 'Para llevar',
         value: '${data.takeawayOrders.length}',
         icon: Icons.shopping_bag_outlined,
@@ -265,6 +265,8 @@ class _TableCard extends StatelessWidget {
     return Semantics(
       button: true,
       excludeSemantics: true,
+      enabled: enabled,
+      onTap: enabled ? onPressed : null,
       label: '${table.name}, ${occupied ? 'ocupada' : 'libre'}',
       child: DecoratedBox(
         decoration: BoxDecoration(
@@ -326,57 +328,6 @@ class _TableCard extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _SummaryMetric extends StatelessWidget {
-  const _SummaryMetric({
-    required this.label,
-    required this.value,
-    required this.icon,
-    required this.foreground,
-    required this.background,
-  });
-
-  final String label;
-  final String value;
-  final IconData icon;
-  final Color foreground;
-  final Color background;
-
-  @override
-  Widget build(BuildContext context) {
-    return PosSurface(
-      child: Row(
-        children: <Widget>[
-          Container(
-            width: 46,
-            height: 46,
-            decoration: BoxDecoration(
-              color: background,
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Icon(icon, color: foreground),
-          ),
-          const SizedBox(width: 13),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(value, style: Theme.of(context).textTheme.headlineSmall),
-                Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.bodyMedium
-                      ?.copyWith(color: CafeColors.muted),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }

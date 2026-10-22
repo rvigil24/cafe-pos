@@ -6,6 +6,8 @@ import '../../../domain/entities/order.dart';
 import '../../../domain/entities/order_details.dart';
 import '../../../domain/entities/payment.dart';
 import '../../../shared/money/money_parser.dart';
+import '../../../shared/presentation/cafe_colors.dart';
+import '../../../shared/presentation/pos_page.dart';
 import '../controllers/payment_controller.dart';
 
 class PaymentPage extends StatefulWidget {
@@ -49,14 +51,14 @@ class _PaymentPageState extends State<PaymentPage> {
     return AnimatedBuilder(
       animation: widget.controller,
       builder: (BuildContext context, Widget? child) {
-        return Scaffold(
-          appBar: AppBar(
-            leading: IconButton(
-              tooltip: 'Volver a la orden',
-              onPressed: widget.controller.isSubmitting ? null : widget.onBack,
-              icon: const Icon(Icons.arrow_back),
-            ),
-            title: const Text('Cobrar orden'),
+        return PosPage(
+          title: 'Cobrar orden',
+          subtitle: 'Revisa el total, registra el método y confirma el pago',
+          isWorking: widget.controller.isSubmitting,
+          leading: IconButton.filledTonal(
+            tooltip: 'Volver a la orden',
+            onPressed: widget.controller.isSubmitting ? null : widget.onBack,
+            icon: const Icon(Icons.arrow_back),
           ),
           body: _body(),
         );
@@ -80,85 +82,190 @@ class _PaymentPageState extends State<PaymentPage> {
 
   Widget _form(OrderDetails details) {
     final Order order = details.order;
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 720),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Text(
-                'Orden #${order.orderNumber}',
-                style: Theme.of(context).textTheme.titleLarge,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                formatPriceCents(order.totalCents),
-                style: Theme.of(context).textTheme.displayMedium,
-                textAlign: TextAlign.center,
-                semanticsLabel: 'Total ${formatPriceCents(order.totalCents)}',
-              ),
-              const SizedBox(height: 24),
-              SegmentedButton<PaymentMethod>(
-                segments: const <ButtonSegment<PaymentMethod>>[
-                  ButtonSegment<PaymentMethod>(
-                    value: PaymentMethod.cash,
-                    icon: Icon(Icons.payments_outlined),
-                    label: Text('Efectivo'),
+    return Padding(
+      padding: const EdgeInsets.all(14),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Expanded(
+            flex: 4,
+            child: PosSurface(
+              padding: EdgeInsets.zero,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 18, 20, 12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          'Orden #${order.orderNumber}',
+                          style: Theme.of(context).textTheme.headlineSmall,
+                        ),
+                        Text(
+                          order.type == OrderType.takeaway
+                              ? 'Para llevar'
+                              : order.tableNameSnapshot!,
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: CafeColors.muted),
+                        ),
+                      ],
+                    ),
                   ),
-                  ButtonSegment<PaymentMethod>(
-                    value: PaymentMethod.transfer,
-                    icon: Icon(Icons.account_balance_outlined),
-                    label: Text('Transferencia'),
+                  const Divider(),
+                  Expanded(
+                    child: ListView.separated(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
+                      ),
+                      itemCount: details.items.length,
+                      separatorBuilder: (_, _) => const Divider(height: 16),
+                      itemBuilder: (BuildContext context, int index) {
+                        final item = details.items[index];
+                        return Row(
+                          children: <Widget>[
+                            Text(
+                              '${item.quantity}×',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(child: Text(item.productNameSnapshot)),
+                            Text(formatPriceCents(item.totalCents)),
+                          ],
+                        );
+                      },
+                    ),
                   ),
-                  ButtonSegment<PaymentMethod>(
-                    value: PaymentMethod.creditCard,
-                    icon: Icon(Icons.credit_card),
-                    label: Text('Tarjeta de crédito'),
+                  Container(
+                    color: CafeColors.cream,
+                    padding: const EdgeInsets.all(20),
+                    child: Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: Text(
+                            'Total a cobrar',
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Flexible(
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              formatPriceCents(order.totalCents),
+                              style: Theme.of(context).textTheme.displayMedium,
+                              semanticsLabel:
+                                  'Total ${formatPriceCents(order.totalCents)}',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
-                selected: <PaymentMethod>{widget.controller.method},
-                onSelectionChanged: widget.controller.isSubmitting
-                    ? null
-                    : (Set<PaymentMethod> selection) {
-                        widget.controller.selectMethod(selection.single);
-                      },
               ),
-              const SizedBox(height: 24),
-              if (widget.controller.method == PaymentMethod.cash)
-                _cashFields()
-              else
-                _manualFields(),
-              if (widget.controller.errorMessage
-                  case final String message) ...<Widget>[
-                const SizedBox(height: 16),
-                MaterialBanner(
-                  content: Text(message),
-                  leading: const Icon(Icons.error_outline),
-                  actions: const <Widget>[SizedBox.shrink()],
-                ),
-              ],
-              const SizedBox(height: 24),
-              FilledButton.icon(
-                onPressed: widget.controller.isSubmitting ? null : _submit,
-                icon: widget.controller.isSubmitting
-                    ? const SizedBox.square(
-                        dimension: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.check_circle_outline),
-                label: Text(
-                  widget.controller.isSubmitting
-                      ? 'Procesando…'
-                      : 'Confirmar pago',
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
+          const SizedBox(width: 14),
+          Expanded(
+            flex: 5,
+            child: PosSurface(
+              padding: EdgeInsets.zero,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: <Widget>[
+                          Text(
+                            'Método de pago',
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                          const SizedBox(height: 12),
+                          _methodSelector(),
+                          const SizedBox(height: 20),
+                          if (widget.controller.method == PaymentMethod.cash)
+                            _cashFields()
+                          else
+                            _manualFields(),
+                          if (widget.controller.errorMessage
+                              case final String message) ...<Widget>[
+                            const SizedBox(height: 16),
+                            MaterialBanner(
+                              content: Text(message),
+                              leading: const Icon(Icons.error_outline),
+                              actions: const <Widget>[SizedBox.shrink()],
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                  PosActionBar(
+                    padding: const EdgeInsets.all(16),
+                    child: FilledButton.icon(
+                      onPressed: widget.controller.isSubmitting
+                          ? null
+                          : _submit,
+                      icon: widget.controller.isSubmitting
+                          ? const SizedBox.square(
+                              dimension: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.check_circle_outline),
+                      label: Text(
+                        widget.controller.isSubmitting
+                            ? 'Procesando…'
+                            : 'Confirmar pago',
+                      ),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: CafeColors.terracotta,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
+    );
+  }
+
+  Widget _methodSelector() {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: <Widget>[
+        _methodChip(PaymentMethod.cash, 'Efectivo', Icons.payments_outlined),
+        _methodChip(
+          PaymentMethod.transfer,
+          'Transferencia',
+          Icons.account_balance_outlined,
+        ),
+        _methodChip(
+          PaymentMethod.creditCard,
+          'Tarjeta de crédito',
+          Icons.credit_card,
+        ),
+      ],
+    );
+  }
+
+  Widget _methodChip(PaymentMethod method, String label, IconData icon) {
+    return ChoiceChip(
+      selected: widget.controller.method == method,
+      onSelected: widget.controller.isSubmitting
+          ? null
+          : (_) => widget.controller.selectMethod(method),
+      avatar: Icon(icon, size: 20),
+      label: Text(label),
     );
   }
 

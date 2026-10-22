@@ -88,6 +88,31 @@ void main() {
     expect(paid!.payment.reference, isNull);
   });
 
+  testWidgets('payment confirmation remains visible at 800x360', (
+    WidgetTester tester,
+  ) async {
+    final _Fixture fixture = _Fixture();
+    await _pumpLandscape(
+      tester,
+      PaymentPage(
+        controller: PaymentController(fixture.useCases, fixture.order.id),
+        onBack: () {},
+        onPaid: (_) {},
+      ),
+      size: const Size(800, 360),
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    final Finder confirmation = find.widgetWithText(
+      FilledButton,
+      'Confirmar pago',
+    );
+    expect(confirmation, findsOneWidget);
+    expect(tester.getRect(confirmation).bottom, lessThanOrEqualTo(360));
+    expect(find.text('Total a cobrar'), findsOneWidget);
+  });
+
   test(
     'controller ignores a repeated submit while payment is running',
     () async {
@@ -114,8 +139,12 @@ void main() {
   );
 }
 
-Future<void> _pumpLandscape(WidgetTester tester, Widget child) async {
-  tester.view.physicalSize = const Size(1280, 800);
+Future<void> _pumpLandscape(
+  WidgetTester tester,
+  Widget child, {
+  Size size = const Size(1280, 800),
+}) async {
+  tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);

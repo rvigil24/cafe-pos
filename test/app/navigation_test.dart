@@ -10,6 +10,7 @@ import 'package:cafe_pos/application/use_cases/report_use_cases.dart';
 import 'package:cafe_pos/application/use_cases/sales_use_cases.dart';
 import 'package:cafe_pos/application/use_cases/settings_use_cases.dart';
 import 'package:cafe_pos/application/use_cases/table_use_cases.dart';
+import 'package:cafe_pos/shared/presentation/pos_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
@@ -40,7 +41,14 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.widgetWithText(AppBar, 'Ventas'), findsOneWidget);
+    expect(
+      tester.widget<NavigationRail>(find.byType(NavigationRail)).selectedIndex,
+      2,
+    );
+    expect(
+      find.descendant(of: find.byType(PosPage), matching: find.text('Ventas')),
+      findsOneWidget,
+    );
     expect(
       find.text('No hay ventas que coincidan con los filtros.'),
       findsOneWidget,
@@ -53,7 +61,17 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.widgetWithText(AppBar, 'Reportes'), findsOneWidget);
+    expect(
+      tester.widget<NavigationRail>(find.byType(NavigationRail)).selectedIndex,
+      3,
+    );
+    expect(
+      find.descendant(
+        of: find.byType(PosPage),
+        matching: find.text('Reportes'),
+      ),
+      findsOneWidget,
+    );
     expect(find.text('No hay ventas pagadas en este período.'), findsOneWidget);
   });
 
@@ -69,6 +87,22 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.text('Inicio'), findsWidgets);
     expect(find.text('Reportes'), findsOneWidget);
+    for (final String destination in <String>[
+      'Ventas',
+      'Reportes',
+      'Productos',
+      'Configuración',
+    ]) {
+      final Finder target = find.descendant(
+        of: find.byType(NavigationRail),
+        matching: find.text(destination),
+      );
+      await tester.ensureVisible(target);
+      await tester.tap(target);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull, reason: destination);
+      expect(find.byType(Scaffold), findsOneWidget);
+    }
   });
 }
 

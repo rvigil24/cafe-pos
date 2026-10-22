@@ -5,6 +5,8 @@ import '../../../domain/entities/sales_report.dart';
 import '../../../shared/dates/cafe_dates.dart';
 import '../../../shared/money/money_parser.dart';
 import '../../../shared/payments/payment_format.dart';
+import '../../../shared/presentation/cafe_colors.dart';
+import '../../../shared/presentation/pos_page.dart';
 import '../controllers/reports_controller.dart';
 
 class ReportsPage extends StatefulWidget {
@@ -30,25 +32,23 @@ class _ReportsPageState extends State<ReportsPage> {
     return AnimatedBuilder(
       animation: widget.controller,
       builder: (BuildContext context, Widget? child) {
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text('Reportes'),
-            actions: <Widget>[
-              IconButton(
-                tooltip: 'Actualizar reporte',
-                onPressed: widget.controller.status == ReportsStatus.loading
-                    ? null
-                    : widget.controller.load,
-                icon: const Icon(Icons.refresh),
-              ),
-            ],
-          ),
+        return PosPage(
+          title: 'Reportes',
+          subtitle: 'Indicadores de ventas y desempeño del café',
+          isWorking: widget.controller.status == ReportsStatus.loading,
+          actions: <Widget>[
+            IconButton.filledTonal(
+              tooltip: 'Actualizar reporte',
+              onPressed: widget.controller.status == ReportsStatus.loading
+                  ? null
+                  : widget.controller.load,
+              icon: const Icon(Icons.refresh),
+            ),
+          ],
           body: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
               _periodSelector(),
-              if (widget.controller.status == ReportsStatus.loading)
-                const LinearProgressIndicator(),
               Expanded(child: _body()),
             ],
           ),
@@ -59,47 +59,50 @@ class _ReportsPageState extends State<ReportsPage> {
 
   Widget _periodSelector() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-      child: Wrap(
-        spacing: 12,
-        runSpacing: 12,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        children: <Widget>[
-          SizedBox(
-            width: 220,
-            child: DropdownButtonFormField<ReportPeriod>(
-              key: ValueKey<(ReportPeriod, int)>((
-                widget.controller.period,
-                _periodMenuGeneration,
-              )),
-              initialValue: widget.controller.period,
-              isExpanded: true,
-              decoration: const InputDecoration(labelText: 'Período'),
-              items: ReportPeriod.values
-                  .map(
-                    (ReportPeriod value) => DropdownMenuItem<ReportPeriod>(
-                      value: value,
-                      child: Text(_periodLabel(value)),
-                    ),
-                  )
-                  .toList(growable: false),
-              onChanged: widget.controller.status == ReportsStatus.loading
-                  ? null
-                  : (ReportPeriod? value) {
-                      if (value != null) {
-                        _selectPeriod(value);
-                      }
-                    },
+      padding: const EdgeInsets.fromLTRB(14, 14, 14, 0),
+      child: PosSurface(
+        padding: const EdgeInsets.all(12),
+        child: Wrap(
+          spacing: 12,
+          runSpacing: 10,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: <Widget>[
+            SizedBox(
+              width: 220,
+              child: DropdownButtonFormField<ReportPeriod>(
+                key: ValueKey<(ReportPeriod, int)>((
+                  widget.controller.period,
+                  _periodMenuGeneration,
+                )),
+                initialValue: widget.controller.period,
+                isExpanded: true,
+                decoration: const InputDecoration(labelText: 'Período'),
+                items: ReportPeriod.values
+                    .map(
+                      (ReportPeriod value) => DropdownMenuItem<ReportPeriod>(
+                        value: value,
+                        child: Text(_periodLabel(value)),
+                      ),
+                    )
+                    .toList(growable: false),
+                onChanged: widget.controller.status == ReportsStatus.loading
+                    ? null
+                    : (ReportPeriod? value) {
+                        if (value != null) {
+                          _selectPeriod(value);
+                        }
+                      },
+              ),
             ),
-          ),
-          if (widget.controller.period == ReportPeriod.custom &&
-              widget.controller.customStart != null &&
-              widget.controller.customEnd != null)
-            Text(
-              '${formatCafeDate(widget.controller.customStart!)} – '
-              '${formatCafeDate(widget.controller.customEnd!)}',
-            ),
-        ],
+            if (widget.controller.period == ReportPeriod.custom &&
+                widget.controller.customStart != null &&
+                widget.controller.customEnd != null)
+              Text(
+                '${formatCafeDate(widget.controller.customStart!)} – '
+                '${formatCafeDate(widget.controller.customEnd!)}',
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -127,22 +130,53 @@ class _ReportsPageState extends State<ReportsPage> {
       );
     }
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+      padding: const EdgeInsets.all(14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: <Widget>[
-              _metric('Ventas netas', formatPriceCents(report.netSalesCents)),
-              _metric('Órdenes pagadas', '${report.paidOrderCount}'),
-              _metric(
-                'Ticket promedio',
-                formatPriceCents(report.averageTicketCents),
-              ),
-              _metric('Unidades vendidas', '${report.unitsSold}'),
-            ],
+          LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              final double width = (constraints.maxWidth - 36) / 4;
+              return Row(
+                children: <Widget>[
+                  SizedBox(
+                    width: width,
+                    child: _metric(
+                      'Ventas netas',
+                      formatPriceCents(report.netSalesCents),
+                      Icons.payments_outlined,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  SizedBox(
+                    width: width,
+                    child: _metric(
+                      'Órdenes pagadas',
+                      '${report.paidOrderCount}',
+                      Icons.receipt_long_outlined,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  SizedBox(
+                    width: width,
+                    child: _metric(
+                      'Ticket promedio',
+                      formatPriceCents(report.averageTicketCents),
+                      Icons.trending_up,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  SizedBox(
+                    width: width,
+                    child: _metric(
+                      'Unidades vendidas',
+                      '${report.unitsSold}',
+                      Icons.local_cafe_outlined,
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
           const SizedBox(height: 20),
           LayoutBuilder(
@@ -154,48 +188,63 @@ class _ReportsPageState extends State<ReportsPage> {
                 children: <Widget>[
                   SizedBox(
                     width: width,
-                    child: _section(
+                    child: _barSection(
                       'Productos más vendidos',
-                      report.bestSellingProducts.map(
-                        (ProductUnits value) =>
-                            _valueRow(value.name, '${value.units} unidades'),
-                      ),
+                      report.bestSellingProducts
+                          .map(
+                            (ProductUnits value) => (
+                              label: value.name,
+                              amount: value.units,
+                              value: '${value.units} unidades',
+                            ),
+                          )
+                          .toList(),
                     ),
                   ),
                   SizedBox(
                     width: width,
-                    child: _section(
+                    child: _barSection(
                       'Ventas por categoría',
-                      report.salesByCategory.map(
-                        (NamedSalesTotal value) => _valueRow(
-                          value.name,
-                          formatPriceCents(value.totalCents),
-                        ),
-                      ),
+                      report.salesByCategory
+                          .map(
+                            (NamedSalesTotal value) => (
+                              label: value.name,
+                              amount: value.totalCents,
+                              value: formatPriceCents(value.totalCents),
+                            ),
+                          )
+                          .toList(),
                     ),
                   ),
                   SizedBox(
                     width: width,
-                    child: _section(
+                    child: _barSection(
                       'Ventas por hora',
-                      report.salesByHour.map(
-                        (HourlySalesTotal value) => _valueRow(
-                          '${value.hour.toString().padLeft(2, '0')}:00',
-                          formatPriceCents(value.totalCents),
-                        ),
-                      ),
+                      report.salesByHour
+                          .map(
+                            (HourlySalesTotal value) => (
+                              label:
+                                  '${value.hour.toString().padLeft(2, '0')}:00',
+                              amount: value.totalCents,
+                              value: formatPriceCents(value.totalCents),
+                            ),
+                          )
+                          .toList(),
                     ),
                   ),
                   SizedBox(
                     width: width,
-                    child: _section(
+                    child: _barSection(
                       'Totales por método',
-                      report.totalsByPaymentMethod.map(
-                        (PaymentMethodTotal value) => _valueRow(
-                          paymentMethodLabel(value.method),
-                          formatPriceCents(value.totalCents),
-                        ),
-                      ),
+                      report.totalsByPaymentMethod
+                          .map(
+                            (PaymentMethodTotal value) => (
+                              label: paymentMethodLabel(value.method),
+                              amount: value.totalCents,
+                              value: formatPriceCents(value.totalCents),
+                            ),
+                          )
+                          .toList(),
                     ),
                   ),
                 ],
@@ -207,55 +256,88 @@ class _ReportsPageState extends State<ReportsPage> {
     );
   }
 
-  Widget _metric(String label, String value) {
+  Widget _metric(String label, String value, IconData icon) {
     return Semantics(
       label: '$label: $value',
-      child: SizedBox(
-        width: 190,
-        child: Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(label),
-                const SizedBox(height: 4),
-                Text(value, style: Theme.of(context).textTheme.headlineSmall),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _section(String title, Iterable<Widget> rows) {
-    return Card.outlined(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
+      child: PosSurface(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Text(title, style: Theme.of(context).textTheme.titleMedium),
-            const Divider(),
-            ...rows,
+            Icon(icon, color: CafeColors.terracotta),
+            const SizedBox(height: 10),
+            Text(value, style: Theme.of(context).textTheme.headlineMedium),
+            Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.bodyMedium
+                  ?.copyWith(color: CafeColors.muted),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _valueRow(String label, String value) {
-    return Semantics(
-      label: '$label: $value',
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 5),
-        child: Row(
-          children: <Widget>[
-            Expanded(child: Text(label)),
-            Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
+  Widget _barSection(
+    String title,
+    List<({int amount, String label, String value})> rows,
+  ) {
+    final int maximum = rows.fold<int>(
+      0,
+      (int current, row) => row.amount > current ? row.amount : current,
+    );
+    return PosSurface(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Text(title, style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 12),
+          for (final row in rows) ...<Widget>[
+            Semantics(
+              label: '${row.label}: ${row.value}',
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: Text(
+                          row.label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        row.value,
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 5),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(999),
+                    child: ColoredBox(
+                      color: CafeColors.terracottaSoft,
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: FractionallySizedBox(
+                          widthFactor: maximum == 0 ? 0 : row.amount / maximum,
+                          child: const ColoredBox(
+                            color: CafeColors.terracotta,
+                            child: SizedBox(height: 8),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
           ],
-        ),
+        ],
       ),
     );
   }

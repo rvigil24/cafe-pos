@@ -139,11 +139,13 @@ class _CafeShellState extends State<CafeShell> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      body: Row(
-        children: <Widget>[
-          _navigationRail(context),
-          Expanded(child: _content()),
-        ],
+      body: SafeArea(
+        child: Row(
+          children: <Widget>[
+            _navigationRail(context),
+            Expanded(child: _content()),
+          ],
+        ),
       ),
     );
   }

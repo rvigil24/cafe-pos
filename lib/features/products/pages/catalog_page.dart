@@ -4,6 +4,8 @@ import '../../../domain/entities/category.dart';
 import '../../../domain/entities/product.dart';
 import '../../../domain/errors/domain_error.dart';
 import '../../../shared/money/money_parser.dart';
+import '../../../shared/presentation/cafe_colors.dart';
+import '../../../shared/presentation/pos_page.dart';
 import '../controllers/catalog_controller.dart';
 
 class CatalogPage extends StatefulWidget {
@@ -27,21 +29,10 @@ class _CatalogPageState extends State<CatalogPage> {
     return AnimatedBuilder(
       animation: widget.controller,
       builder: (BuildContext context, Widget? child) {
-        return Scaffold(
-          resizeToAvoidBottomInset: false,
-          appBar: AppBar(
-            title: const Text('Productos'),
-            actions: <Widget>[
-              if (widget.controller.isSaving)
-                const Padding(
-                  padding: EdgeInsets.all(16),
-                  child: SizedBox.square(
-                    dimension: 24,
-                    child: CircularProgressIndicator(strokeWidth: 3),
-                  ),
-                ),
-            ],
-          ),
+        return PosPage(
+          title: 'Productos',
+          subtitle: 'Organiza el catálogo y controla su disponibilidad',
+          isWorking: widget.controller.isSaving,
           body: _body(),
         );
       },
@@ -63,46 +54,52 @@ class _CatalogPageState extends State<CatalogPage> {
   }
 
   Widget _readyBody() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: <Widget>[
-        SizedBox(
-          width: 300,
-          child: Material(
-            color: Theme.of(context).colorScheme.surfaceContainerLow,
-            child: Column(
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 8, 8),
-                  child: Row(
-                    children: <Widget>[
-                      const Expanded(
-                        child: Text(
-                          'Categorías',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
+    return Padding(
+      padding: const EdgeInsets.all(14),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          SizedBox(
+            width: 280,
+            child: PosSurface(
+              color: CafeColors.cream,
+              padding: EdgeInsets.zero,
+              child: Column(
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 8, 8),
+                    child: Row(
+                      children: <Widget>[
+                        const Expanded(
+                          child: Text(
+                            'Categorías',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
-                      ),
-                      IconButton.filledTonal(
-                        tooltip: 'Crear categoría',
-                        onPressed: widget.controller.isSaving
-                            ? null
-                            : _createCategory,
-                        icon: const Icon(Icons.add),
-                      ),
-                    ],
+                        IconButton.filledTonal(
+                          tooltip: 'Crear categoría',
+                          onPressed: widget.controller.isSaving
+                              ? null
+                              : _createCategory,
+                          icon: const Icon(Icons.add),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                Expanded(child: _categoryList()),
-              ],
+                  Expanded(child: _categoryList()),
+                ],
+              ),
             ),
           ),
-        ),
-        const VerticalDivider(width: 1),
-        Expanded(child: _productArea()),
-      ],
+          const SizedBox(width: 14),
+          Expanded(
+            child: PosSurface(padding: EdgeInsets.zero, child: _productArea()),
+          ),
+        ],
+      ),
     );
   }
 
@@ -118,34 +115,52 @@ class _CatalogPageState extends State<CatalogPage> {
       itemCount: widget.controller.categories.length,
       itemBuilder: (BuildContext context, int index) {
         final Category category = widget.controller.categories[index];
-        return ListTile(
-          selected: category.id == widget.controller.selectedCategoryId,
-          enabled: !widget.controller.isSaving,
-          onTap: () => widget.controller.selectCategory(category.id),
-          title: Text(category.name),
-          subtitle: category.isActive ? null : const Text('Inactiva'),
-          trailing: PopupMenuButton<String>(
-            tooltip: 'Acciones de ${category.name}',
+        final bool selected =
+            category.id == widget.controller.selectedCategoryId;
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          child: ListTile(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(13),
+            ),
+            tileColor: selected ? CafeColors.terracottaSoft : null,
+            selectedTileColor: CafeColors.terracottaSoft,
+            selected: category.id == widget.controller.selectedCategoryId,
             enabled: !widget.controller.isSaving,
-            onSelected: (String action) =>
-                _categoryAction(action, category, index),
-            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-              const PopupMenuItem<String>(value: 'edit', child: Text('Editar')),
-              PopupMenuItem<String>(
-                value: 'up',
-                enabled: index > 0,
-                child: const Text('Mover arriba'),
-              ),
-              PopupMenuItem<String>(
-                value: 'down',
-                enabled: index < widget.controller.categories.length - 1,
-                child: const Text('Mover abajo'),
-              ),
-              PopupMenuItem<String>(
-                value: 'active',
-                child: Text(category.isActive ? 'Desactivar' : 'Reactivar'),
-              ),
-            ],
+            onTap: () => widget.controller.selectCategory(category.id),
+            title: Text(category.name),
+            subtitle: category.isActive
+                ? null
+                : const Text(
+                    'Inactiva',
+                    style: TextStyle(color: CafeColors.danger),
+                  ),
+            trailing: PopupMenuButton<String>(
+              tooltip: 'Acciones de ${category.name}',
+              enabled: !widget.controller.isSaving,
+              onSelected: (String action) =>
+                  _categoryAction(action, category, index),
+              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                const PopupMenuItem<String>(
+                  value: 'edit',
+                  child: Text('Editar'),
+                ),
+                PopupMenuItem<String>(
+                  value: 'up',
+                  enabled: index > 0,
+                  child: const Text('Mover arriba'),
+                ),
+                PopupMenuItem<String>(
+                  value: 'down',
+                  enabled: index < widget.controller.categories.length - 1,
+                  child: const Text('Mover abajo'),
+                ),
+                PopupMenuItem<String>(
+                  value: 'active',
+                  child: Text(category.isActive ? 'Desactivar' : 'Reactivar'),
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -201,13 +216,17 @@ class _CatalogPageState extends State<CatalogPage> {
                   title: 'No hay productos',
                   message: 'Agrega el primer producto de esta categoría.',
                 )
-              : ListView.separated(
+              : GridView.builder(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                    maxCrossAxisExtent: 390,
+                    mainAxisExtent: 140,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                  ),
                   itemCount: products.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 8),
-                  itemBuilder: (BuildContext context, int index) {
-                    return _productCard(products[index]);
-                  },
+                  itemBuilder: (BuildContext context, int index) =>
+                      _productCard(products[index]),
                 ),
         ),
       ],
@@ -215,53 +234,94 @@ class _CatalogPageState extends State<CatalogPage> {
   }
 
   Widget _productCard(Product product) {
+    final bool available = product.isActive && product.isAvailable;
     return Card(
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        title: Text(product.name),
-        subtitle: Text(
-          '${formatPriceCents(product.priceCents)} · '
-          '${product.isActive ? (product.isAvailable ? 'Disponible' : 'Agotado') : 'Inactivo'}',
-        ),
-        leading: Icon(
-          product.isAvailable && product.isActive
-              ? Icons.check_circle_outline
-              : Icons.remove_circle_outline,
-        ),
-        trailing: Wrap(
-          spacing: 8,
-          crossAxisAlignment: WrapCrossAlignment.center,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 8, 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            if (product.isActive)
-              FilterChip(
-                label: Text(product.isAvailable ? 'Disponible' : 'Agotado'),
-                selected: product.isAvailable,
-                onSelected: widget.controller.isSaving
-                    ? null
-                    : (bool value) => _run(
-                        widget.controller.setProductAvailable(product, value),
-                        'Disponibilidad actualizada.',
-                      ),
-              ),
-            IconButton(
-              tooltip: 'Editar ${product.name}',
-              onPressed: widget.controller.isSaving
-                  ? null
-                  : () => _editProduct(product),
-              icon: const Icon(Icons.edit_outlined),
+            Row(
+              children: <Widget>[
+                Expanded(
+                  child: Text(
+                    product.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+                PosStatusPill(
+                  label: product.isActive
+                      ? (product.isAvailable ? 'Disponible' : 'Agotado')
+                      : 'Inactivo',
+                  icon: available
+                      ? Icons.check_circle_outline
+                      : Icons.block_outlined,
+                  foreground: available
+                      ? CafeColors.sage
+                      : (product.isActive
+                            ? CafeColors.amber
+                            : CafeColors.danger),
+                  background: available
+                      ? CafeColors.sageSoft
+                      : (product.isActive
+                            ? CafeColors.amberSoft
+                            : CafeColors.dangerSoft),
+                ),
+              ],
             ),
-            IconButton(
-              tooltip: product.isActive
-                  ? 'Desactivar ${product.name}'
-                  : 'Reactivar ${product.name}',
-              onPressed: widget.controller.isSaving
-                  ? null
-                  : () => _toggleProduct(product),
-              icon: Icon(
-                product.isActive
-                    ? Icons.visibility_off_outlined
-                    : Icons.visibility_outlined,
-              ),
+            Text(
+              formatPriceCents(product.priceCents),
+              style: Theme.of(context).textTheme.titleLarge
+                  ?.copyWith(color: CafeColors.terracotta),
+            ),
+            const Spacer(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: <Widget>[
+                if (product.isActive)
+                  IconButton(
+                    tooltip: product.isAvailable
+                        ? 'Marcar ${product.name} como agotado'
+                        : 'Marcar ${product.name} como disponible',
+                    onPressed: widget.controller.isSaving
+                        ? null
+                        : () => _run(
+                            widget.controller.setProductAvailable(
+                              product,
+                              !product.isAvailable,
+                            ),
+                            'Disponibilidad actualizada.',
+                          ),
+                    icon: Icon(
+                      product.isAvailable
+                          ? Icons.inventory_outlined
+                          : Icons.inventory_2_outlined,
+                    ),
+                  ),
+                const Spacer(),
+                IconButton(
+                  tooltip: 'Editar ${product.name}',
+                  onPressed: widget.controller.isSaving
+                      ? null
+                      : () => _editProduct(product),
+                  icon: const Icon(Icons.edit_outlined),
+                ),
+                IconButton(
+                  tooltip: product.isActive
+                      ? 'Desactivar ${product.name}'
+                      : 'Reactivar ${product.name}',
+                  onPressed: widget.controller.isSaving
+                      ? null
+                      : () => _toggleProduct(product),
+                  icon: Icon(
+                    product.isActive
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -417,38 +477,40 @@ class _CategoryDialogState extends State<_CategoryDialog> {
   @override
   Widget build(BuildContext context) {
     final bool keyboardVisible = MediaQuery.viewInsetsOf(context).bottom > 0;
+    final Widget form = Form(
+      key: _formKey,
+      child: TextFormField(
+        controller: _name,
+        autofocus: true,
+        textInputAction: TextInputAction.done,
+        decoration: const InputDecoration(labelText: 'Nombre'),
+        validator: (String? value) =>
+            value == null || value.trim().isEmpty ? 'Ingresa un nombre.' : null,
+        onFieldSubmitted: (_) => _submit(),
+      ),
+    );
+    if (keyboardVisible) {
+      return Dialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 40, vertical: 4),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+          child: form,
+        ),
+      );
+    }
     return AlertDialog(
       scrollable: true,
-      title: keyboardVisible
-          ? null
-          : Text(
-              widget.category == null ? 'Nueva categoría' : 'Editar categoría',
-            ),
-      contentPadding: keyboardVisible
-          ? const EdgeInsets.symmetric(horizontal: 24, vertical: 8)
-          : null,
-      content: Form(
-        key: _formKey,
-        child: TextFormField(
-          controller: _name,
-          autofocus: true,
-          textInputAction: TextInputAction.done,
-          decoration: const InputDecoration(labelText: 'Nombre'),
-          validator: (String? value) => value == null || value.trim().isEmpty
-              ? 'Ingresa un nombre.'
-              : null,
-          onFieldSubmitted: (_) => _submit(),
-        ),
+      title: Text(
+        widget.category == null ? 'Nueva categoría' : 'Editar categoría',
       ),
-      actions: keyboardVisible
-          ? const <Widget>[]
-          : <Widget>[
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancelar'),
-              ),
-              FilledButton(onPressed: _submit, child: const Text('Guardar')),
-            ],
+      content: form,
+      actions: <Widget>[
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancelar'),
+        ),
+        FilledButton(onPressed: _submit, child: const Text('Guardar')),
+      ],
     );
   }
 
@@ -612,21 +674,7 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Icon(icon, size: 56),
-            const SizedBox(height: 12),
-            Text(title, style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 8),
-            Text(message, textAlign: TextAlign.center),
-          ],
-        ),
-      ),
-    );
+    return PosStateView(icon: icon, title: title, message: message);
   }
 }
 

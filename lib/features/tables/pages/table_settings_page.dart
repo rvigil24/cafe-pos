@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
 
 import '../../../domain/entities/cafe_table.dart';
+import '../../../shared/presentation/cafe_colors.dart';
+import '../../../shared/presentation/pos_page.dart';
 import '../../../shared/widgets/text_input_dialog.dart';
 import '../controllers/table_controller.dart';
 
 class TableSettingsPage extends StatefulWidget {
-  const TableSettingsPage({required this.controller, super.key});
+  const TableSettingsPage({
+    required this.controller,
+    this.embedded = false,
+    super.key,
+  });
 
   final TableController controller;
+  final bool embedded;
 
   @override
   State<TableSettingsPage> createState() => _TableSettingsPageState();
@@ -25,33 +32,56 @@ class _TableSettingsPageState extends State<TableSettingsPage> {
     return AnimatedBuilder(
       animation: widget.controller,
       builder: (BuildContext context, Widget? child) {
-        return Scaffold(
-          resizeToAvoidBottomInset: false,
-          appBar: AppBar(
-            title: const Text('Configuración · Mesas'),
-            actions: <Widget>[
-              if (widget.controller.isSaving)
-                const Padding(
-                  padding: EdgeInsets.all(16),
-                  child: SizedBox.square(
-                    dimension: 24,
-                    child: CircularProgressIndicator(strokeWidth: 3),
+        if (widget.embedded) {
+          return Material(color: CafeColors.ivory, child: _embeddedBody());
+        }
+        return PosPage(
+          title: 'Configuración · Mesas',
+          subtitle: 'Organiza las mesas disponibles para órdenes en el local',
+          isWorking: widget.controller.isSaving,
+          actions: <Widget>[
+            if (widget.controller.status == TableStatus.ready)
+              FilledButton.icon(
+                onPressed: widget.controller.isSaving
+                    ? null
+                    : () => _editTable(),
+                icon: const Icon(Icons.add),
+                label: const Text('Crear mesa'),
+              ),
+          ],
+          body: _body(),
+        );
+      },
+    );
+  }
+
+  Widget _embeddedBody() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        if (widget.controller.status == TableStatus.ready)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  child: Text(
+                    'Mesas del salón',
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
                 ),
-            ],
-          ),
-          floatingActionButton: widget.controller.status == TableStatus.ready
-              ? FloatingActionButton.extended(
+                FilledButton.icon(
                   onPressed: widget.controller.isSaving
                       ? null
                       : () => _editTable(),
                   icon: const Icon(Icons.add),
                   label: const Text('Crear mesa'),
-                )
-              : null,
-          body: _body(),
-        );
-      },
+                ),
+              ],
+            ),
+          ),
+        Expanded(child: _body()),
+      ],
     );
   }
 
@@ -74,7 +104,7 @@ class _TableSettingsPageState extends State<TableSettingsPage> {
 
   Widget _tableList() {
     return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 96),
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
       children: <Widget>[
         const Text(
           'Las mesas inactivas no aparecen al crear órdenes. Una mesa ocupada '
@@ -114,7 +144,22 @@ class _TableSettingsPageState extends State<TableSettingsPage> {
                       : Icons.visibility_off_outlined,
                 ),
                 title: Text(table.name),
-                subtitle: Text(table.isActive ? 'Activa' : 'Inactiva'),
+                subtitle: Row(
+                  children: <Widget>[
+                    PosStatusPill(
+                      label: table.isActive ? 'Activa' : 'Inactiva',
+                      icon: table.isActive
+                          ? Icons.check_circle_outline
+                          : Icons.visibility_off_outlined,
+                      foreground: table.isActive
+                          ? CafeColors.sage
+                          : CafeColors.danger,
+                      background: table.isActive
+                          ? CafeColors.sageSoft
+                          : CafeColors.dangerSoft,
+                    ),
+                  ],
+                ),
                 trailing: PopupMenuButton<String>(
                   tooltip: 'Acciones de ${table.name}',
                   enabled: !widget.controller.isSaving,

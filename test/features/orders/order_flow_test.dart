@@ -86,7 +86,7 @@ void main() {
       TableSettingsPage(controller: TableController(fixture.tableUseCases)),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FloatingActionButton, 'Crear mesa'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Crear mesa'));
     await tester.pumpAndSettle();
 
     tester.view.viewInsets = const FakeViewPadding(bottom: 430);
@@ -251,7 +251,12 @@ Future<void> _pumpLandscape(
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
-  await tester.pumpWidget(MaterialApp(theme: buildCafeTheme(), home: child));
+  await tester.pumpWidget(
+    MaterialApp(
+      theme: buildCafeTheme(),
+      home: Scaffold(resizeToAvoidBottomInset: false, body: child),
+    ),
+  );
 }
 
 class _Fixture {

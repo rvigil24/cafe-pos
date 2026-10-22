@@ -96,11 +96,13 @@ class PosSurface extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: color,
+    return Material(
+      color: color,
+      surfaceTintColor: Colors.transparent,
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: CafeColors.outlineSoft),
+        side: const BorderSide(color: CafeColors.outlineSoft),
       ),
       child: Padding(padding: padding, child: child),
     );
@@ -125,6 +127,7 @@ class PosStatusPill extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       label: label,
+      excludeSemantics: true,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
@@ -144,6 +147,129 @@ class PosStatusPill extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class PosMetricCard extends StatelessWidget {
+  const PosMetricCard({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.foreground,
+    required this.background,
+    super.key,
+  });
+
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color foreground;
+  final Color background;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: '$label: $value',
+      child: PosSurface(
+        child: Row(
+          children: <Widget>[
+            Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                color: background,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(icon, color: foreground),
+            ),
+            const SizedBox(width: 13),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(value, style: Theme.of(context).textTheme.headlineSmall),
+                  Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodyMedium
+                        ?.copyWith(color: CafeColors.muted),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class PosActionBar extends StatelessWidget {
+  const PosActionBar({
+    required this.child,
+    this.color = CafeColors.espresso,
+    this.padding = const EdgeInsets.all(16),
+    super.key,
+  });
+
+  final Widget child;
+  final Color color;
+  final EdgeInsetsGeometry padding;
+
+  @override
+  Widget build(BuildContext context) {
+    return ColoredBox(
+      color: color,
+      child: Padding(padding: padding, child: child),
+    );
+  }
+}
+
+class PosStateView extends StatelessWidget {
+  const PosStateView({
+    required this.icon,
+    required this.title,
+    required this.message,
+    this.action,
+    super.key,
+  });
+
+  final IconData icon;
+  final String title;
+  final String message;
+  final Widget? action;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final bool compact = constraints.maxHeight < 300;
+        return Center(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.all(compact ? 12 : 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Icon(icon, size: compact ? 32 : 52, color: CafeColors.muted),
+                SizedBox(height: compact ? 6 : 12),
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                SizedBox(height: compact ? 4 : 8),
+                Text(message, textAlign: TextAlign.center),
+                if (action != null) ...<Widget>[
+                  SizedBox(height: compact ? 8 : 16),
+                  action!,
+                ],
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

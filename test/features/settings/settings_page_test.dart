@@ -42,12 +42,12 @@ void main() {
     addTearDown(tables.dispose);
 
     await tester.pumpWidget(
-      MaterialApp(
-        home: SettingsPage(controller: controller, tableController: tables),
-      ),
+      _app(SettingsPage(controller: controller, tableController: tables)),
     );
     await tester.pumpAndSettle();
 
+    await tester.tap(find.text('Negocio y respaldos'));
+    await tester.pumpAndSettle();
     expect(find.text('Cafetería'), findsOneWidget);
     await tester.tap(find.byTooltip('Editar nombre del negocio'));
     await tester.pumpAndSettle();
@@ -95,12 +95,12 @@ void main() {
     addTearDown(controller.dispose);
     addTearDown(tables.dispose);
     await tester.pumpWidget(
-      MaterialApp(
-        home: SettingsPage(controller: controller, tableController: tables),
-      ),
+      _app(SettingsPage(controller: controller, tableController: tables)),
     );
     await tester.pumpAndSettle();
 
+    await tester.tap(find.text('Negocio y respaldos'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Exportar respaldo'));
     await tester.pumpAndSettle();
     expect(find.text('El respaldo está dañado.'), findsOneWidget);
@@ -127,12 +127,12 @@ void main() {
     addTearDown(tables.dispose);
 
     await tester.pumpWidget(
-      MaterialApp(
-        home: SettingsPage(controller: controller, tableController: tables),
-      ),
+      _app(SettingsPage(controller: controller, tableController: tables)),
     );
     await tester.pumpAndSettle();
 
+    await tester.tap(find.text('Negocio y respaldos'));
+    await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
     expect(find.byTooltip('Editar nombre del negocio'), findsOneWidget);
     await tester.scrollUntilVisible(
@@ -142,4 +142,10 @@ void main() {
     );
     expect(find.text('Exportar respaldo'), findsOneWidget);
   });
+}
+
+Widget _app(Widget page) {
+  return MaterialApp(
+    home: Scaffold(resizeToAvoidBottomInset: false, body: page),
+  );
 }

@@ -21,9 +21,7 @@ void main() {
     final _CategoryFake categories = _CategoryFake();
     final CatalogController controller = _controller(categories);
 
-    await tester.pumpWidget(
-      MaterialApp(home: CatalogPage(controller: controller)),
-    );
+    await tester.pumpWidget(_app(CatalogPage(controller: controller)));
     await tester.pumpAndSettle();
     expect(find.text('Aún no hay categorías'), findsOneWidget);
 
@@ -62,7 +60,7 @@ void main() {
       ..values.add(_category('one', 'Bebidas'));
 
     await tester.pumpWidget(
-      MaterialApp(home: CatalogPage(controller: _controller(categories))),
+      _app(CatalogPage(controller: _controller(categories))),
     );
     await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Acciones de Bebidas'));
@@ -74,6 +72,35 @@ void main() {
     expect(find.textContaining('El historial no cambiará.'), findsOneWidget);
   });
 
+  testWidgets('shows available, sold out, and inactive states with icons', (
+    WidgetTester tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(1280, 800));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final _CategoryFake categories = _CategoryFake()
+      ..values.add(_category('category-1', 'Bebidas'));
+    final _ProductFake products = _ProductFake()
+      ..values.addAll(<Product>[
+        _product('one', 'Americano'),
+        _product('two', 'Latte', available: false),
+        _product('three', 'Moca', active: false),
+      ]);
+
+    await tester.pumpWidget(
+      _app(CatalogPage(controller: _controller(categories, products))),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Disponible'), findsOneWidget);
+    expect(find.text('Agotado'), findsOneWidget);
+    expect(find.text('Inactivo'), findsOneWidget);
+    expect(find.byIcon(Icons.check_circle_outline), findsOneWidget);
+    expect(find.byIcon(Icons.block_outlined), findsNWidgets(2));
+    await tester.binding.setSurfaceSize(const Size(696, 360));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('category form stays usable with a landscape keyboard viewport', (
     WidgetTester tester,
   ) async {
@@ -81,9 +108,7 @@ void main() {
     addTearDown(() => tester.binding.setSurfaceSize(null));
     addTearDown(tester.view.resetViewInsets);
     final CatalogController controller = _controller(_CategoryFake());
-    await tester.pumpWidget(
-      MaterialApp(home: CatalogPage(controller: controller)),
-    );
+    await tester.pumpWidget(_app(CatalogPage(controller: controller)));
     await tester.pumpAndSettle();
 
     await tester.tap(find.byTooltip('Crear categoría'));
@@ -117,7 +142,7 @@ void main() {
     final _CategoryFake categories = _CategoryFake()
       ..values.add(_category('category-1', 'Bebidas'));
     await tester.pumpWidget(
-      MaterialApp(home: CatalogPage(controller: _controller(categories))),
+      _app(CatalogPage(controller: _controller(categories))),
     );
     await tester.pumpAndSettle();
 
@@ -142,7 +167,7 @@ void main() {
   testWidgets('shows a recoverable loading error', (WidgetTester tester) async {
     final _CategoryFake categories = _CategoryFake()..failLists = true;
     await tester.pumpWidget(
-      MaterialApp(home: CatalogPage(controller: _controller(categories))),
+      _app(CatalogPage(controller: _controller(categories))),
     );
     await tester.pumpAndSettle();
 
@@ -168,14 +193,42 @@ void main() {
   );
 }
 
-CatalogController _controller(_CategoryFake categories) {
+Widget _app(Widget page) {
+  return MaterialApp(
+    home: Scaffold(resizeToAvoidBottomInset: false, body: page),
+  );
+}
+
+CatalogController _controller(
+  _CategoryFake categories, [
+  _ProductFake? products,
+]) {
   return CatalogController(
     CatalogUseCases(
       categories: categories,
-      products: _ProductFake(),
+      products: products ?? _ProductFake(),
       ids: _Ids(),
       clock: () => DateTime.utc(2026, 9, 29, 12),
     ),
+  );
+}
+
+Product _product(
+  String id,
+  String name, {
+  bool available = true,
+  bool active = true,
+}) {
+  final DateTime now = DateTime.utc(2026, 9, 29, 12);
+  return Product(
+    id: id,
+    categoryId: 'category-1',
+    name: name,
+    priceCents: 250,
+    isAvailable: available,
+    isActive: active,
+    createdAt: now,
+    updatedAt: now,
   );
 }
 
