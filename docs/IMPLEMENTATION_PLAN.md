@@ -79,6 +79,8 @@ Output: the MVP is installable and recoverable after device failure.
 
 ## Milestone 6 — Integral UI redesign
 
+Status: `COMPLETE` — accepted by the owner on 2026-10-21. See [verification and closure](milestones/MILESTONE_6.md).
+
 - Introduce a warm, modern cafe design system without changing product behavior.
 - Replace default Material presentation with a consistent tablet shell and shared components.
 - Redesign Home and Order first and validate the prototype on the physical target.

@@ -2,13 +2,13 @@
 
 ## Status
 
-- State: `IN_PROGRESS`
+- State: `COMPLETE`
 - Owner: Ruben Vigil
 - Branch: `milestone/6-ui-redesign`
 - Remote branch: `origin/milestone/6-ui-redesign`
 - Started: 2026-10-20
-- Completed:
-- Approval: Complete redesign plan explicitly approved by the owner on 2026-10-20. The owner subsequently approved the Home and Order prototype with “lo apruebo”; rollout verification continued on 2026-10-21.
+- Completed: 2026-10-21
+- Approval: Complete redesign plan explicitly approved by the owner on 2026-10-20. The owner subsequently approved the Home and Order prototype with “lo apruebo” and accepted the complete verified redesign with “aceptado” on 2026-10-21.
 
 ## Objective and output
 
@@ -123,13 +123,22 @@ The normal APK remains installed and open on Home. Dummy catalog data and the on
 - `3c22c7f` — `feat(ui): redesign home and order prototype`
 - `740b6c2` — `feat(ui): extend cafe redesign across remaining screens`
 - `3ece076` — `fix(ui): keep payment input and product names visible`
+- `c1af9de` — `docs: record full UI redesign verification and screenshots` (accepted delivery).
+- Closure commit: `docs: close milestone 6`, containing this acceptance record. Its exact revision is available with `git log -1 --format=%H -- docs/milestones/MILESTONE_6.md`.
+
+## Branch closure
+
+- Remote milestone branch: `origin/milestone/6-ui-redesign`.
+- Integration: fast-forward into `main`; both branches published to `origin`.
+- Final main revision: the closure commit identified above, shared by `main`, `origin/main`, `milestone/6-ui-redesign`, and `origin/milestone/6-ui-redesign` at closure.
+- Validation applies to the accepted delivery; closure changes only documentation.
 
 ## Remaining limitations or blockers
 
-- No unresolved implementation or verification blocker. Owner acceptance of the complete redesign remains pending; the milestone stays `IN_PROGRESS` until acceptance and branch closure.
+- None.
 
 ## Completion decision
 
-- [ ] All applicable completion gates in `docs/DEVELOPMENT_WORKFLOW.md` pass.
-- [ ] Owner accepted the milestone.
-- Final state: `IN_PROGRESS`
+- [x] All applicable completion gates in `docs/DEVELOPMENT_WORKFLOW.md` pass.
+- [x] Owner accepted the milestone.
+- Final state: `COMPLETE`
