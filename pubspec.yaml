@@ -1,7 +1,7 @@
 name: cafe_pos
 description: Offline-first point of sale for a small cafe.
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.0.0-beta.1+2
 
 environment:
   sdk: ^3.13.4

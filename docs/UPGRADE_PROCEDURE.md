@@ -10,6 +10,11 @@
 
 ## Install the candidate
 
+These steps require the same release signing key as the existing installation.
+Download the APK and checksum from the matching GitHub Release. Android may
+require allowing installation from the browser or file manager; developer
+options are not required.
+
 1. Verify the APK SHA-256 against the value recorded in the milestone evidence.
 2. Install the APK over the existing `com.rvigil.cafe_pos` application.
 3. Do **not** uninstall the existing app and do not clear its storage.
@@ -17,12 +22,34 @@
 5. Confirm the business name, catalog, open orders, latest sale, and reports.
 6. Create and reopen a small fictitious order, then remove or cancel it as appropriate.
 
-For development-device installation:
+For installation through an authorized physical Android development connection:
 
 ```bash
-flutter run -d <physical-device-id> --no-build --no-resident \
-  --use-application-binary=build/app/outputs/flutter-apk/app-debug.apk
+adb -s <physical-device-id> install -r build/app/outputs/flutter-apk/app-release.apk
+adb -s <physical-device-id> shell am start -n com.rvigil.cafe_pos/.MainActivity
 ```
+
+## Transition from a development installation
+
+The first signed release uses a different certificate from debug APKs. Android
+rejects an in-place debug-to-release update. Do not uninstall in response to
+that error without first securing and verifying an external backup.
+
+1. Export the development installation's database and verify its integrity.
+2. Keep that file outside the application and preferably outside the device.
+3. Obtain explicit approval to replace the development installation.
+4. Uninstall the development APK, install the signed release, and restore the
+   exported backup through **Configuración → Negocio y respaldos**.
+5. Compare the business name, catalog, tables, orders, sales, and totals.
+
+This is a one-time transition. Ordinary release-to-release upgrades must use
+in-place installation, retain the release key, and increment the version code.
+
+Keep routine development on a separate device or first secure and verify a
+backup before changing signing identities again. Development commands such as
+`./cafe run` and `./cafe test` install debug/test APKs; Flutter tooling may
+uninstall an incompatible release installation. Do not point these commands
+at a device containing business data without a verified external backup.
 
 ## Restore after device or data loss
 

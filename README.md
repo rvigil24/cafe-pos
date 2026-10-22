@@ -90,7 +90,7 @@ flutter run
 
 Follow `docs/DEVELOPMENT_WORKFLOW.md` and the active milestone evidence record when running and recording these commands.
 
-The Android Gradle process is limited to a 1 GB heap and one worker so local builds remain reliable on the development machine. For a prebuilt APK, `flutter run` can avoid a second Gradle build:
+The Android Gradle process is limited to a 1 GB heap, 512 MB metaspace, and one worker so local builds remain reliable on the development machine. Release lint analysis requires more than the previous 384 MB metaspace limit. For a prebuilt APK, `flutter run` can avoid a second Gradle build:
 
 ```bash
 flutter run --no-build --use-application-binary=build/app/outputs/flutter-apk/app-debug.apk
@@ -98,6 +98,9 @@ flutter run --no-build --use-application-binary=build/app/outputs/flutter-apk/ap
 
 ## Backup, upgrade, and release operation
 
+- [Download Android trial APK](https://github.com/rvigil24/cafe-pos/releases)
+- [Spanish installation guide](docs/INSTALACION_PRUEBAS.md)
+- [Signed Android release operation](docs/ANDROID_RELEASE.md)
 - [Manual tablet checklist](docs/MANUAL_TABLET_TEST_CHECKLIST.md)
 - [MVP release notes](docs/RELEASE_NOTES_MVP.md)
 - [Upgrade and recovery procedure](docs/UPGRADE_PROCEDURE.md)

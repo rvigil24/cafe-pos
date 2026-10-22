@@ -1,6 +1,11 @@
 # Cafe POS MVP — Release notes
 
-Candidate version: `1.0.0+1`
+Trial release: `1.0.0-beta.1+2` — tag `v1.0.0-beta.1` (prerelease).
+
+Download `cafe-pos-1.0.0-beta.1.apk` and follow
+[the Spanish installation guide](https://github.com/rvigil24/cafe-pos/blob/v1.0.0-beta.1/docs/INSTALACION_PRUEBAS.md).
+Requires Android 7.0/API 24 or newer. This universal APK uses a dedicated release
+key and is distributed directly without the Play Store.
 
 ## Included
 
@@ -12,6 +17,7 @@ Candidate version: `1.0.0+1`
 - Consistent SQLite export through Android document storage.
 - Validated restore with a preventive local backup and automatic rollback if replacement fails.
 - Incremental schema migration through SQLite `user_version`.
+- Complete cafe tablet UI redesign accepted in milestone 6.
 
 ## Backup compatibility
 
@@ -32,3 +38,12 @@ Candidate version: `1.0.0+1`
 
 Follow `docs/UPGRADE_PROCEDURE.md`. Do not uninstall the existing application
 when upgrading because uninstalling removes app-private data.
+
+An existing debug-signed development install cannot be updated directly by this
+release-signed APK. Export and verify an external backup before an explicitly
+approved development-to-release replacement, then restore it. Stop and contact
+the application owner if Android reports an incompatible signature.
+Subsequent releases use the same key and increasing version codes.
+
+Each device starts with its own empty local database; no test catalog or business
+data is bundled. Updates are manual. The repository and release assets are public.
